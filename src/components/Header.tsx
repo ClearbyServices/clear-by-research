@@ -30,7 +30,7 @@ export default async function Header() {
   const researchExecution = filterServices("research execution");
   const thesisCat = filterServices("thesis");
 
-  const researchPub = filterServices("Research & Publication");
+  const researchPaper = filterServices("Research Paper");
   const dataAnalysis = filterServices("Data Analysis");
   const implementation = filterServices("Implementation");
   const academicSupport = filterServices("Academic Support");
@@ -43,7 +43,7 @@ export default async function Header() {
       researchDevelopment={researchDevelopment}
       researchExecution={researchExecution}
       thesisCat={thesisCat}
-      researchPub={researchPub}
+      researchPaper={researchPaper}
       dataAnalysis={dataAnalysis}
       implementation={implementation}
       academicSupport={academicSupport}

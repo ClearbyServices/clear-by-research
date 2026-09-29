@@ -28,7 +28,7 @@ export default async function Footer() {
   const researchExecution = filterByCat("research execution");
   const thesisCat = filterByCat("thesis") || [];
   
-  const researchPub = filterByCat("Research & Publication");
+  const researchPaper = filterByCat("Research Paper");
   const dataAnalysis = filterByCat("Data Analysis");
   const implementation = filterByCat("Implementation");
   const academicSupport = filterByCat("Academic Support");
@@ -59,7 +59,7 @@ export default async function Footer() {
               </p>
               
               <div className="flex items-start justify-center lg:justify-start gap-2.5 text-sm text-gray-300 mb-4 leading-relaxed text-center lg:text-left">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink-0 mt-1 hidden lg:block">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink: 0 mt-1 hidden lg:block">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
@@ -81,7 +81,7 @@ export default async function Footer() {
                   href="mailto:contact@clearbyresearch.com" 
                   className="inline-flex items-center justify-center lg:justify-start gap-2.5 text-sm text-gray-300 hover:text-white transition-colors"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink: 0">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                     <polyline points="22,6 12,13 2,6"></polyline>
                   </svg>
@@ -93,7 +93,7 @@ export default async function Footer() {
                     href="tel:+917020112146" 
                     className="inline-flex items-center justify-center lg:justify-start gap-2.5 text-sm text-gray-300 hover:text-white transition-colors"
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink-0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-white/70 flex-shrink: 0">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
                     <span>+91-7020112146</span>
@@ -126,7 +126,6 @@ export default async function Footer() {
                   <li><Link href="/blog" className="hover:text-brand-gold transition-colors">Blog</Link></li>
                   <li><Link href="/contact" className="hover:text-brand-gold transition-colors">Contact Us</Link></li>
                   <li><Link href="/privacy" className="hover:text-brand-gold transition-colors">Privacy Policy</Link></li>
-                  <li><Link href="/disclaimer" className="hover:text-brand-gold transition-colors">Disclaimer</Link></li>
                   <li><Link href="/terms" className="hover:text-brand-gold transition-colors">Terms of Use</Link></li>
                 </ul>
               </div>
@@ -186,9 +185,9 @@ export default async function Footer() {
                 ))}
               </ul>
 
-              <h4 className="text-base font-serif mb-4 border-b border-white/20 pb-1.5 text-brand-gold">Research &amp; Publication</h4>
+              <h4 className="text-base font-serif mb-4 border-b border-white/20 pb-1.5 text-brand-gold">Research Paper</h4>
               <ul className="space-y-1.5 text-xs text-gray-300">
-                {researchPub.map((s, i) => (
+                {researchPaper.map((s, i) => (
                   <li key={i}><Link href={`/services/${s.slug}`} className="hover:text-brand-gold transition-colors">{s.sub_menu || s.h1}</Link></li>
                 ))}
               </ul>

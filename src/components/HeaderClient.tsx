@@ -20,7 +20,7 @@ export default function HeaderClient({
   researchDevelopment = [],
   researchExecution = [],
   thesisCat = [],
-  researchPub = [],
+  researchPaper = [],
   dataAnalysis = [],
   implementation = [],
   academicSupport = [],
@@ -31,7 +31,7 @@ export default function HeaderClient({
   researchDevelopment: Service[];
   researchExecution: Service[];
   thesisCat: Service[];
-  researchPub: Service[];
+  researchPaper: Service[];
   dataAnalysis: Service[];
   implementation: Service[];
   academicSupport: Service[];
@@ -158,8 +158,8 @@ export default function HeaderClient({
               
               <div className="absolute top-full right-0 w-[900px] bg-white border border-gray-200 shadow-2xl rounded-sm p-6 hidden group-hover:grid grid-cols-4 gap-6 z-55">
                 <div className="flex flex-col space-y-2.5">
-                  <span className="text-[10px] font-bold text-brand-gold uppercase tracking-wider mb-1">Research &amp; Publication</span>
-                  {researchPub?.map((s) => (
+                  <span className="text-[10px] font-bold text-brand-gold uppercase tracking-wider mb-1">Research Paper</span>
+                  {researchPaper?.map((s) => (
                     <Link key={s.slug} href={`/services/${s.slug}`} className={`text-xs transition leading-snug ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold" : "text-gray-700 hover:text-brand-purple"}`}>
                       {s.sub_menu || s.h1}
                     </Link>
@@ -215,6 +215,8 @@ export default function HeaderClient({
               Schedule Free Consultation
             </Link>
           </div>
+
+
 
           {/* Mobile Hamburger Button */}
           <div className="flex lg:hidden items-center">
@@ -328,7 +330,7 @@ export default function HeaderClient({
               <div className="pl-4 pt-2 space-y-3 border-l-2 border-brand-gold ml-2 my-2">
                 <div>
                   <p className="text-[10px] font-bold uppercase text-brand-gold mb-1">Research & Publication</p>
-                  {researchPub?.map((s) => (
+                  {researchPaper?.map((s) => (
                     <Link key={s.slug} href={`/services/${s.slug}`} onClick={() => setMobileMenuOpen(false)} className={`block text-xs py-1 ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold" : "text-gray-600 hover:text-brand-purple"}`}>
                       {s.sub_menu || s.h1}
                     </Link>
