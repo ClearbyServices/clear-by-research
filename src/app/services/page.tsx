@@ -8,15 +8,21 @@ const supabase = createClient(
 );
 
 async function getServices() {
+  // 1. Debug: Check if Next.js is actually reading your .env.local file
+  console.log("Supabase URL loaded:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "Yes" : "NO - Missing ENV");
+
   const { data, error } = await supabase
     .from('services')
     .select('slug, title, sub_menu, category, h1, intro_paragraphs, menu_order')
-    .order('menu_order', { ascending: true }); // Orders services by your database menu_order sequence
+    .order('menu_order', { ascending: true });
 
-  if (error || !data) {
-    console.error("Error fetching services:", error);
+  if (error) {
+    // 2. Debug: Force Node to print the actual error properties instead of {}
+    console.error("Error fetching services Details:", JSON.stringify(error, null, 2));
     return [];
   }
+
+  if (!data) return [];
 
   return data.map((item: any) => ({
     slug: item.slug,
@@ -25,7 +31,6 @@ async function getServices() {
     desc: item.intro_paragraphs?.[0] || "Professional academic advisory service tailored to your research milestone.",
   }));
 }
-
 export default async function ServicesPage() {
   const services = await getServices();
 
