@@ -53,7 +53,7 @@ export default function HeaderClient({
           
           {/* Logo Section */}
           <div className="flex items-center shrink-0">
-            <Link href="/phd-thesis-guidance-and-research-support" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-0.5">
               <img 
                 src="/favcon.png" 
                 alt="Clearby Research Logo" 
