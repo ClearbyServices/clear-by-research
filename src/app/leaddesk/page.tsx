@@ -184,11 +184,12 @@ export default function LeadDesk() {
     link.click();
   };
 
+  const isAdmin = currentUser?.role?.toLowerCase().includes("admin") || currentUser?.email === "admin@clearby.com";
+
   const accessibleLeads = useMemo(() => {
-    const isAdmin = currentUser?.role?.toLowerCase().includes("admin") || currentUser?.email === "admin@clearby.com";
     if (isAdmin) return leads;
     return leads.filter(l => l.assigned_to === currentUser?.id);
-  }, [leads, currentUser]);
+  }, [leads, currentUser, isAdmin]);
 
   const filteredLeads = useMemo(() => {
     return accessibleLeads.filter((l) => {
@@ -242,8 +243,6 @@ export default function LeadDesk() {
       </div>
     );
   }
-
-  const isAdmin = currentUser.role?.toLowerCase().includes("admin") || currentUser.email === "admin@clearby.com";
 
   return (
     <div className="fixed inset-0 flex bg-gray-50 text-slate-800 font-sans overflow-hidden z-50">
@@ -449,7 +448,22 @@ export default function LeadDesk() {
                             </select>
                           </td>
                           <td className="p-4">
-                            <span className="text-xs font-medium text-slate-700">{crms.find((c) => c.id === lead.assigned_to)?.name || "Unassigned"}</span>
+                            {isAdmin ? (
+                              <select
+                                value={lead.assigned_to || ""}
+                                onChange={async (e) => {
+                                  const newId = e.target.value;
+                                  setLeads(leads.map(l => l.id === lead.id ? { ...l, assigned_to: newId } : l));
+                                  await supabase.from("leads").update({ assigned_to: newId }).eq("id", lead.id);
+                                }}
+                                className="bg-gray-100 border-none text-xs font-medium rounded-md py-1.5 px-2 outline-none cursor-pointer text-slate-700"
+                              >
+                                <option value="">Unassigned</option>
+                                {crms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                            ) : (
+                              <span className="text-xs font-medium text-slate-700">{crms.find((c) => c.id === lead.assigned_to)?.name || "Unassigned"}</span>
+                            )}
                           </td>
                           <td className="p-4 flex gap-2">
                             <button
@@ -576,7 +590,7 @@ export default function LeadDesk() {
 
       {/* MODALS */}
 
-      {showLeadModal && (
+      {showLeadModal && isAdmin && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <form onSubmit={addLead} className="bg-white rounded-xl shadow-2xl w-full max-w-xl flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -639,7 +653,7 @@ export default function LeadDesk() {
         </div>
       )}
 
-      {showCrmModal && (
+      {showCrmModal && isAdmin && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <form onSubmit={saveCrm} className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -648,23 +662,23 @@ export default function LeadDesk() {
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Full Name</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Full Name *</label>
                 <input required name="name" defaultValue={editingCrm?.name || ""} type="text" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Login Email</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Login Email (ID) *</label>
                 <input required name="email" defaultValue={editingCrm?.email || ""} type="email" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Login Password</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Login Password *</label>
                 <input required name="password" defaultValue={editingCrm?.password || ""} type="text" placeholder="e.g. secret123" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Phone</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Phone *</label>
                 <input required name="phone" defaultValue={editingCrm?.phone || ""} type="tel" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Role</label>
+                <label className="block text-xs font-bold uppercase text-gray-500 tracking-wider mb-1">Role *</label>
                 <input required name="role" defaultValue={editingCrm?.role || "Sales Rep"} type="text" placeholder="e.g. Sales Rep, Support" className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
@@ -683,7 +697,6 @@ export default function LeadDesk() {
               <h2 className="text-xl font-bold flex items-center gap-2">
                 {actionModal.type === "whatsapp" ? <span className="text-green-600 flex items-center gap-2"><MessageCircle/> Send WhatsApp</span> : <span className="text-blue-600 flex items-center gap-2"><Mail/> Send Email</span>}
               </h2>
-              {/* FIXED: changed setShowActionModal to setActionModal(null) */}
               <button type="button" onClick={() => setActionModal(null)} className="text-gray-400 hover:text-gray-800"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-6 space-y-4">
