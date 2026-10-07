@@ -5,8 +5,8 @@ import ReactMarkdown from "react-markdown";
 import type { Metadata } from "next"; // Added Metadata import
 
 const supabase = createClient(
-  process.env.SUPABASE_URL || "https://ltywtxqwuzhtovbqyaiv.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0eXd0eHF3dXpodG92YnF5YWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NTU3OTEsImV4cCI6MjEwNTEzMTc5MX0.EnssZKc3C9AkkGgiI7MQdl8Xd8rW5fTX2gqRd2VM65I"
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 );
 
 interface BlogPost {
