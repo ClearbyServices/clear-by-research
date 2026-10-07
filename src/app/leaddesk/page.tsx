@@ -28,6 +28,8 @@ type Lead = {
   whatsapp_contacted: boolean;
   email_sent: boolean;
   created_at: string;
+  // NEW: Keeps track of which table this lead belongs to
+  table_name?: "leads" | "google_ads_leads"; 
 };
 
 type CRM = {
@@ -75,8 +77,20 @@ export default function LeadDesk() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: leadData } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
-    if (leadData) setLeads(leadData);
+    
+    // Fetch from BOTH tables
+    const { data: leadData } = await supabase.from("leads").select("*");
+    const { data: adsData } = await supabase.from("google_ads_leads").select("*");
+
+    // Merge them and attach the table name so we know where to save updates later
+    const combinedLeads = [
+      ...(leadData || []).map(l => ({ ...l, table_name: "leads" as const })),
+      ...(adsData || []).map(l => ({ ...l, table_name: "google_ads_leads" as const }))
+    ];
+
+    // Sort combined leads by newest first
+    combinedLeads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setLeads(combinedLeads);
 
     const { data: crmData } = await supabase.from("crms").select("*");
     if (crmData && crmData.length > 0) {
@@ -109,17 +123,21 @@ export default function LeadDesk() {
     const fd = new FormData(e.currentTarget);
     const newLeadData = Object.fromEntries(fd.entries());
     
-    const { data, error } = await supabase.from("leads").insert([newLeadData]).select();
+    // Dynamically route manual entries based on their source
+    const targetTable = newLeadData.source === "Google Ads" ? "google_ads_leads" : "leads";
+    
+    const { data, error } = await supabase.from(targetTable).insert([newLeadData]).select();
     if (error) alert("Failed to add lead.");
     else if (data) {
-      setLeads([data[0], ...leads]);
+      setLeads([{ ...data[0], table_name: targetTable }, ...leads]);
       setShowLeadModal(false);
     }
   };
 
-  const updateLeadStatus = async (id: string, newStatus: string) => {
+  // Uses the specific lead's table_name to save the update
+  const updateLeadStatus = async (id: string, newStatus: string, tableName: string = "leads") => {
     setLeads(leads.map((l) => (l.id === id ? { ...l, status: newStatus } : l)));
-    await supabase.from("leads").update({ status: newStatus }).eq("id", id);
+    await supabase.from(tableName).update({ status: newStatus }).eq("id", id);
   };
 
   const performAction = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -141,7 +159,9 @@ export default function LeadDesk() {
       window.open(`mailto:${lead.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`, "_blank");
     }
     setActionModal(null);
-    await supabase.from("leads").update(updatePayload).eq("id", lead.id);
+    
+    const targetTable = lead.table_name || "leads";
+    await supabase.from(targetTable).update(updatePayload).eq("id", lead.id);
   };
 
   const saveCrm = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -441,7 +461,7 @@ export default function LeadDesk() {
                           <td className="p-4">
                             <select
                               value={lead.status || "Fresh"}
-                              onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
+                              onChange={(e) => updateLeadStatus(lead.id, e.target.value, lead.table_name)}
                               className="bg-gray-100 border-none text-xs font-medium rounded-md py-1.5 px-2 outline-none cursor-pointer"
                             >
                               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
@@ -454,7 +474,7 @@ export default function LeadDesk() {
                                 onChange={async (e) => {
                                   const newId = e.target.value;
                                   setLeads(leads.map(l => l.id === lead.id ? { ...l, assigned_to: newId } : l));
-                                  await supabase.from("leads").update({ assigned_to: newId }).eq("id", lead.id);
+                                  await supabase.from(lead.table_name || "leads").update({ assigned_to: newId }).eq("id", lead.id);
                                 }}
                                 className="bg-gray-100 border-none text-xs font-medium rounded-md py-1.5 px-2 outline-none cursor-pointer text-slate-700"
                               >
@@ -497,7 +517,8 @@ export default function LeadDesk() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => {
                         const id = e.dataTransfer.getData("id");
-                        if (id) updateLeadStatus(id, status);
+                        const targetLead = leads.find((l) => l.id === id);
+                        if (id && targetLead) updateLeadStatus(id, status, targetLead.table_name);
                       }}
                     >
                       <div className="flex justify-between items-center mb-4">

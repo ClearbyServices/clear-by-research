@@ -12,12 +12,19 @@ const supabase = createClient(
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const { name, email, phone, service, message } = data;
+    const { name, email, phone, service, message, source } = data;
 
-    // 1. Save lead to Supabase database
+    // Determine target table based on source (Google Ads vs Regular Website)
+    const tableName = source === "Google Ads" ? "google_ads_leads" : "leads";
+
+    const insertPayload = source === "Google Ads" 
+      ? { name, email, phone, service, message, source: "Google Ads", priority: "High", status: "Fresh" }
+      : { name, email, phone, service, message };
+
+    // 1. Save lead to the correct Supabase database table
     const { error: dbError } = await supabase
-      .from('leads')
-      .insert([{ name, email, phone, service, message }]);
+      .from(tableName)
+      .insert([insertPayload]);
 
     if (dbError) {
       console.error("Supabase Database Error:", dbError);
@@ -25,12 +32,14 @@ export async function POST(request: Request) {
     }
 
     // 2. Send instant email notification via Resend
+    const emailSubjectPrefix = source === "Google Ads" ? "🔥 Google Ads Lead" : "New Enquiry";
     const emailResponse = await resend.emails.send({
       from: 'Clearby Research <onboarding@resend.dev>',
       to: [process.env.CONTACT_EMAIL || 'contact@clearbyresearch.com'],
-      subject: `New Enquiry: ${service} from ${name}`,
+      subject: `${emailSubjectPrefix}: ${service} from ${name}`,
       html: `
-        <h2>New Client Enquiry Received</h2>
+        <h2>${emailSubjectPrefix} Received</h2>
+        <p><strong>Source:</strong> ${source || 'Website'}</p>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Phone:</strong> ${phone}</p>

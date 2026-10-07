@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ContactForm from "@/components/ContactForm";
+import GoogleAdsContactForm from "@/components/GoogleAdsContactForm";
 
 export default function LandingHeroContent() {
   // State to track which FAQ is currently open
@@ -1309,9 +1309,9 @@ export default function LandingHeroContent() {
           <div className="container">
             <div className="trust-form-grid">
               
-              {/* Right Column: Contact Form */}
+             {/* Right Column: Contact Form */}
               <div>
-                <ContactForm variant="hero" />
+                <GoogleAdsContactForm />
               </div>
               
               {/* Left Column: Why Scholars Trust Clearby Research */}
