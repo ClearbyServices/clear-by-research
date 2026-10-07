@@ -19,8 +19,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Clearby Research | PhD Research Guidance",
-  description: "Premier academic advisory firm for PhD and Master's students.",
+  title: "PhD Research Guidance from Expert Consultants | 11+ Yrs of Exp. | E-Clearby Research",
+  description: "Get PhD thesis guidance from experts with 11+ years of experience. Personalized, integrity-first coaching and affordable dissertation consultation for your research.",
+  alternates: { canonical: "https://www.clearbyresearch.com/" },
 };
 
 export default function RootLayout({
