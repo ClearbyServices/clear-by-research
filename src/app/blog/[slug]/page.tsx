@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
+import type { Metadata } from "next"; // Added Metadata import
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "https://ltywtxqwuzhtovbqyaiv.supabase.co",
@@ -15,10 +16,40 @@ interface BlogPost {
   excerpt: string;
   content: string;
   category: string;
-  featured_image?: string; // Added to match your Supabase database column
+  featured_image?: string; 
   created_at?: string;
   read_time?: string;
 }
+
+// =========================================================================
+// ADDED SEO DYNAMIC METADATA GENERATOR
+// =========================================================================
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug).trim();
+
+  // Fetch only the fields needed for SEO
+  const { data: post } = await supabase
+    .from("blogs")
+    .select("title, meta_description")
+    .eq("slug", decodedSlug)
+    .single();
+
+  if (!post) {
+    return { title: "Blog Post Not Found | E-Clearby Research" };
+  }
+
+  return {
+    title: post.title,
+    description: post.meta_description || post.title, // Fallback to title if no description exists
+    alternates: { 
+      canonical: `https://www.clearbyresearch.com/blog/${decodedSlug}` 
+    },
+  };
+}
+// =========================================================================
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   const decodedSlug = decodeURIComponent(slug).trim();

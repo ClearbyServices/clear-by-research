@@ -1,7 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import ServicesFilters from "@/components/ServicesFilters";
+import type { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "PhD Research Consultation, Thesis & Dissertation Coaching Pune | 5★ Rated | E-Clearby Research",
+  description: "As trusted PhD Topics Consultants, we help you select a research direction that is original and achievable; through expert guidance in Thesis Writing, we support you in structuring and strengthening your own work chapter by chapter.",
+  alternates: { canonical: "https://www.clearbyresearch.com/services" },
+};
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""

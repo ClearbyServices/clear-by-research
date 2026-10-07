@@ -5,6 +5,7 @@ import { CheckCircle2, ArrowRight } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import ContactForm from "@/components/ContactForm";
 import FaqAccordion from "@/components/FaqAccordion";
+import type { Metadata } from "next"; // Added Metadata import
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -37,6 +38,36 @@ interface ServiceData {
     buttonText: string;
   };
 }
+
+// =========================================================================
+// ADDED SEO DYNAMIC METADATA GENERATOR
+// =========================================================================
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug).trim();
+
+  // Fetch only the fields needed for SEO
+  const { data: service } = await supabase
+    .from("services")
+    .select("title, meta_description")
+    .eq("slug", decodedSlug)
+    .single();
+
+  if (!service) {
+    return { title: "Service Not Found | E-Clearby Research" };
+  }
+
+  return {
+    title: service.title,
+    description: service.meta_description,
+    alternates: { 
+      canonical: `https://www.clearbyresearch.com/services/${decodedSlug}` 
+    },
+  };
+}
+// =========================================================================
 
 async function getService(slug: string): Promise<ServiceData | null> {
   const decodedSlug = decodeURIComponent(slug).trim();

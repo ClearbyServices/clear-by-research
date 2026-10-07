@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ContactForm from "@/components/ContactForm";
 import { LampContainer } from "@/components/ui/lamp";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "PhD Research Guidance from Expert Consultants | 11+ Yrs of Exp. | E-Clearby Research",
+  description: "Get PhD thesis guidance from experts with 11+ years of experience. Personalized, integrity-first coaching and affordable dissertation consultation for your research.",
+  alternates: { canonical: "https://www.clearbyresearch.com/" },
+};
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
