@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { LayoutDashboard, List as ListIcon, Kanban, Users, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle } from "lucide-react";
 
 // Types & Config
 import { CRM, Lead, SOURCES, STATUSES, PRIORITIES } from "../../types/crm";
@@ -12,6 +12,8 @@ import AnalyticsTab from "@/components/leaddesk/AnalyticsTab";
 import KanbanTab from "@/components/leaddesk/KanbanTab";
 import TeamTab from "@/components/leaddesk/TeamTab";
 import LeadListTab from "@/components/leaddesk/LeadListTab";
+import ServicesTab from "@/components/leaddesk/ServicesTab";
+import BlogTab from "@/components/leaddesk/BlogTab";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ltywtxqwuzhtovbqyaiv.supabase.co",
@@ -19,11 +21,19 @@ const supabase = createClient(
 );
 
 export default function LeadDesk() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const isMounted = useSyncExternalStore(() => () => {}, () => true, () => false);
+  const [loading, setLoading] = useState(true);
 
   // Auth State
-  const [currentUser, setCurrentUser] = useState<CRM | null>(null);
+  const [currentUser, setCurrentUser] = useState<CRM | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const savedUser = sessionStorage.getItem("ld_current_user");
+      return savedUser ? JSON.parse(savedUser) as CRM : null;
+    } catch {
+      return null;
+    }
+  });
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -45,7 +55,6 @@ export default function LeadDesk() {
   const handleLogout = useCallback((force = false) => {
     if (force || window.confirm("SECURITY: Are you sure you want to sign out of the CRM?")) {
       setCurrentUser(null);
-      // CHANGED TO SESSION STORAGE
       sessionStorage.removeItem("ld_current_user");
     }
   }, []);
@@ -87,16 +96,7 @@ export default function LeadDesk() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [showLeadModal, showCrmModal]);
 
-  useEffect(() => {
-    setIsMounted(true);
-    // CHANGED TO SESSION STORAGE
-    const savedUser = sessionStorage.getItem("ld_current_user");
-    if (savedUser) setCurrentUser(JSON.parse(savedUser));
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = useCallback(async () => {
     const { data: leadData } = await supabase.from("leads").select("*");
     const { data: adsData } = await supabase.from("google_ads_leads").select("*");
     const combinedLeads = [
@@ -113,7 +113,11 @@ export default function LeadDesk() {
       setCrms([{ id: "CRM-ADMIN", name: "Admin User", email: "admin@clearby.com", password: "admin123", phone: "9999999999", role: "Administrator" }]);
     }
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +125,6 @@ export default function LeadDesk() {
     const found = crms.find(c => c.email.toLowerCase() === loginEmail.toLowerCase() && c.password === loginPassword);
     if (found) {
       setCurrentUser(found);
-      // CHANGED TO SESSION STORAGE
       sessionStorage.setItem("ld_current_user", JSON.stringify(found));
     } else {
       setLoginError("Invalid email or password. Please try again.");
@@ -294,7 +297,11 @@ export default function LeadDesk() {
             { id: "dashboard", label: "Analytics", icon: <LayoutDashboard className="w-5 h-5" /> },
             { id: "list", label: "Lead Tickets", icon: <ListIcon className="w-5 h-5" /> },
             { id: "kanban", label: "Pipeline", icon: <Kanban className="w-5 h-5" /> },
-            ...(isAdmin ? [{ id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> }] : []),
+            ...(isAdmin ? [
+              { id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> },
+              { id: "services", label: "Manage Services", icon: <Layers className="w-5 h-5" /> },
+              { id: "blog", label: "Manage Blog", icon: <FileText className="w-5 h-5" /> }
+            ] : []),
           ].map((item) => (
             <button
               key={item.id}
@@ -331,7 +338,7 @@ export default function LeadDesk() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={fetchData} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Refresh Live Data">
+            <button onClick={() => { setLoading(true); fetchData(); }} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Refresh Live Data">
               <RefreshCcw className={`w-5 h-5 ${loading ? "animate-spin text-indigo-600" : ""}`} />
             </button>
             <select
@@ -342,7 +349,7 @@ export default function LeadDesk() {
               <option value="All">All Statuses</option>
               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
             </select>
-            {isAdmin && (
+            {isAdmin && activeTab !== "services" && activeTab !== "blog" && (
               <button
                 onClick={() => setShowLeadModal(true)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"
@@ -364,6 +371,8 @@ export default function LeadDesk() {
               {activeTab === "list" && <LeadListTab filteredLeads={filteredLeads} crms={crms} isAdmin={isAdmin} updateLeadStatus={updateLeadStatus} reassignLead={reassignLead} setActionModal={setActionModal} />}
               {activeTab === "kanban" && <KanbanTab filteredLeads={filteredLeads} crms={crms} updateLeadStatus={updateLeadStatus} />}
               {activeTab === "crm" && isAdmin && <TeamTab crms={crms} leads={leads} setEditingCrm={setEditingCrm} setShowCrmModal={setShowCrmModal} deleteCrm={deleteCrm} />}
+              {activeTab === "services" && isAdmin && <ServicesTab />}
+              {activeTab === "blog" && isAdmin && <BlogTab />}
             </>
           )}
         </div>

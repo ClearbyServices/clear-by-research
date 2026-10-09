@@ -140,9 +140,11 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
             <div className="space-y-4 mb-8 max-w-2xl">
               {service.introParagraphs.map((para, idx) => (
-                <p key={idx} className="text-gray-600 text-base leading-relaxed">
-                  {para}
-                </p>
+                  <p 
+                    key={idx} 
+                    className="text-gray-600 text-base leading-relaxed [&_a]:text-brand-purple [&_a]:underline [&_a:hover]:opacity-80"
+                    dangerouslySetInnerHTML={{ __html: para }}
+                  />
               ))}
             </div>
           </div>
