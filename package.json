@@ -2,10 +2,11 @@
   "name": "clear-by-research",
   "version": "0.1.0",
   "private": true,
- "scripts": {
+"scripts": {
   "dev": "next dev",
   "build": "next build",
-  "start": "next start -p ${PORT:-3000}"
+  "start": "next start -p ${PORT:-3000}",
+  "lint": "eslint"
 },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
