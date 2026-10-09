@@ -19,7 +19,7 @@ interface BlogPost {
   author_name?: string;
   read_time?: string;
   created_at?: string;
-  featured_image?: string; // Corrected column name from database
+  featured_image?: string;
   is_featured?: boolean;
 }
 
@@ -64,6 +64,11 @@ export default function BlogPage() {
   const displayedBlogs = filteredBlogs.slice(0, visibleCount);
   const hasMorePosts = visibleCount < filteredBlogs.length;
 
+  const cleanExcerptText = (text: string) => {
+    if (!text) return "Explore expert insights and advisory guidance tailored for your academic milestones.";
+    return text.replace(/<\/?[^>]+(>|$)/g, "");
+  };
+
   return (
     <div className="w-full flex flex-col bg-white">
       
@@ -104,7 +109,7 @@ export default function BlogPage() {
         {/* 3. FEATURED ARTICLE BANNER */}
         {featuredPost && activeCategory === "All" && (
           <div className="bg-brand-light border border-gray-200 rounded-sm overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch">
-            <div className="lg:col-span-7 bg-gray-100 min-h-[280px] relative">
+            <div className="lg:col-span-7 bg-gray-100 min-h-70 relative">
               <img 
                 src={featuredPost.featured_image || "/blog-featured.jpg"} 
                 alt={featuredPost.title}
@@ -119,8 +124,8 @@ export default function BlogPage() {
                 <h2 className="text-2xl md:text-3xl font-serif font-bold text-brand-purple mb-4 leading-tight">
                   {featuredPost.title}
                 </h2>
-                <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                  {featuredPost.excerpt}
+                <p className="text-sm text-gray-600 leading-relaxed mb-6 line-clamp-3">
+                  {cleanExcerptText(featuredPost.excerpt || featuredPost.content)}
                 </p>
               </div>
               <div className="flex items-center justify-between border-t border-gray-200/60 pt-4 text-xs text-gray-500 font-medium">
@@ -165,7 +170,7 @@ export default function BlogPage() {
                         {post.title}
                       </h3>
                       <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-3">
-                        {post.excerpt}
+                        {cleanExcerptText(post.excerpt || post.content)}
                       </p>
                     </div>
                   </div>

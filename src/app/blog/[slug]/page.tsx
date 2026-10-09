@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import ReactMarkdown from "react-markdown";
-import type { Metadata } from "next"; // Added Metadata import
+import type { Metadata } from "next";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -19,18 +18,15 @@ interface BlogPost {
   featured_image?: string; 
   created_at?: string;
   read_time?: string;
+  meta_description?: string;
 }
 
-// =========================================================================
-// ADDED SEO DYNAMIC METADATA GENERATOR
-// =========================================================================
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
 
-  // Fetch only the fields needed for SEO
   const { data: post } = await supabase
     .from("blogs")
     .select("title, meta_description")
@@ -43,24 +39,25 @@ export async function generateMetadata(
 
   return {
     title: post.title,
-    description: post.meta_description || post.title, // Fallback to title if no description exists
+    description: post.meta_description || post.title,
     alternates: { 
       canonical: `https://www.clearbyresearch.com/blog/${decodedSlug}` 
     },
   };
 }
-// =========================================================================
 
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   const decodedSlug = decodeURIComponent(slug).trim();
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("blogs")
     .select("*")
     .eq("slug", decodedSlug)
     .single();
 
-  if (error || !data) {
+  let resolvedData = data;
+
+  if (error || !resolvedData) {
     const { data: fallbackData } = await supabase
       .from("blogs")
       .select("*")
@@ -68,15 +65,15 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
       .limit(1);
 
     if (fallbackData && fallbackData.length > 0) {
-      data = fallbackData[0];
+      resolvedData = fallbackData[0];
     }
   }
 
-  if (!data) {
+  if (!resolvedData) {
     return null;
   }
 
-  return data;
+  return resolvedData;
 }
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -110,7 +107,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
         {/* Featured Image Banner */}
         {post.featured_image && (
-          <div className="mb-10 w-full h-[350px] md:h-[450px] bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
+          <div className="mb-10 w-full h-87.5 md:h-112.5 bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
             <img 
               src={post.featured_image} 
               alt={post.title} 
@@ -119,20 +116,11 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </div>
         )}
 
-        {/* Render content using ReactMarkdown with custom styling classes */}
-        <div className="prose prose-purple max-w-none text-sm text-gray-700 leading-relaxed space-y-4">
-          <ReactMarkdown
-            components={{
-              h2: ({node, ...props}) => <h2 className="text-2xl font-serif font-bold text-brand-purple mt-8 mb-4" {...props} />,
-              h3: ({node, ...props}) => <h3 className="text-xl font-serif font-bold text-brand-purple mt-6 mb-3" {...props} />,
-              p: ({node, ...props}) => <p className="mb-4 leading-relaxed" {...props} />,
-              ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-2 mb-4" {...props} />,
-              li: ({node, ...props}) => <li className="text-gray-700" {...props} />,
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </div>
+        {/* Render HTML content safely using dangerouslySetInnerHTML */}
+        <div 
+          className="prose prose-purple max-w-none text-sm text-gray-700 leading-relaxed [&_p]:mb-4 [&_h2]:text-2xl [&_h2]:font-serif [&_h2]:font-bold [&_h2]:text-brand-purple [&_h2]:mt-8 [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-serif [&_h3]:font-bold [&_h3]:text-brand-purple [&_h3]:mt-6 [&_h3]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-2 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-2 [&_ol]:mb-4 [&_li]:text-gray-700 [&_a]:text-brand-purple [&_a]:underline"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         {/* Bottom Back Button */}
         <div className="mt-16 pt-8 border-t border-gray-200 flex justify-between items-center">

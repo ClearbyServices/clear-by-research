@@ -7,37 +7,47 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 );
 
-async function getServices() {
-  // 1. Debug: Check if Next.js is actually reading your .env.local file
-  console.log("Supabase URL loaded:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "Yes" : "NO - Missing ENV");
+interface ServiceRecord {
+  slug: string;
+  title: string;
+  sub_menu?: string;
+  category?: string;
+  h1?: string;
+  intro_paragraphs?: string[];
+  menu_order?: number;
+}
 
+async function getServices() {
   const { data, error } = await supabase
     .from('services')
     .select('slug, title, sub_menu, category, h1, intro_paragraphs, menu_order')
     .order('menu_order', { ascending: true });
 
   if (error) {
-    // 2. Debug: Force Node to print the actual error properties instead of {}
     console.error("Error fetching services Details:", JSON.stringify(error, null, 2));
     return [];
   }
 
   if (!data) return [];
 
-  return data.map((item: any) => ({
-    slug: item.slug,
-    title: item.sub_menu || item.h1 || item.title,
-    category: item.category || "General",
-    desc: item.intro_paragraphs?.[0] || "Professional academic advisory service tailored to your research milestone.",
-  }));
+  return (data as ServiceRecord[]).map((item) => {
+    const rawDesc = item.intro_paragraphs?.[0] || "Professional academic advisory service tailored to your research milestone.";
+    const cleanDesc = rawDesc.replace(/<\/?[^>]+(>|$)/g, "");
+
+    return {
+      slug: item.slug,
+      title: item.sub_menu || item.h1 || item.title,
+      category: item.category || "General",
+      desc: cleanDesc,
+    };
+  });
 }
+
 export default async function ServicesPage() {
   const services = await getServices();
 
   return (
     <div className="w-full flex flex-col bg-brand-light">
-      
-      {/* 1. HEADER SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-brand-purple mb-6">
           Services
@@ -47,10 +57,8 @@ export default async function ServicesPage() {
         </p>
       </section>
 
-      {/* 2 & 3. DYNAMIC CATEGORY FILTERS & SERVICES GRID */}
       <ServicesFilters services={services} />
 
-      {/* 4. MENTORSHIP & SUPPORT SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-10 border border-gray-100 shadow-sm rounded-sm">
@@ -61,9 +69,9 @@ export default async function ServicesPage() {
               Strategic guidance designed to build your research capacity. We provide high-level mentorship on theoretical frameworks, methodological choices, and academic planning.
             </p>
             <ul className="space-y-2 text-sm text-gray-700 font-medium">
-              <li>• Strategic Academic Planning</li>
-              <li>• Theoretical Justification</li>
-              <li>• Defense Rehearsal</li>
+              <li>Strategic Academic Planning</li>
+              <li>Theoretical Justification</li>
+              <li>Defense Rehearsal</li>
             </ul>
           </div>
           <div className="bg-white p-10 border border-gray-100 shadow-sm rounded-sm">
@@ -74,15 +82,14 @@ export default async function ServicesPage() {
               Tactical execution and structured support. Our team assists with data processing, formatting to university standards, and structural editing for international publication.
             </p>
             <ul className="space-y-2 text-sm text-gray-700 font-medium">
-              <li>• Data Coding & Analysis</li>
-              <li>• Thesis Formatting</li>
-              <li>• Literature Synthesis</li>
+              <li>Data Coding & Analysis</li>
+              <li>Thesis Formatting</li>
+              <li>Literature Synthesis</li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* 5. BOTTOM CTA */}
       <section className="w-full py-16 bg-brand-purple px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <h2 className="text-3xl font-serif font-bold text-white">
@@ -93,7 +100,6 @@ export default async function ServicesPage() {
           </Link>
         </div>
       </section>
-
     </div>
   );
 }

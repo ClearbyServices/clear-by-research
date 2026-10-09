@@ -1,11 +1,10 @@
-import { use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import ContactForm from "@/components/ContactForm";
 import FaqAccordion from "@/components/FaqAccordion";
-import type { Metadata } from "next"; // Added Metadata import
+import type { Metadata } from "next";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -31,7 +30,6 @@ interface ServiceData {
     data: { feature: string; generic: string; clearby: string }[];
   };
   faqs?: { q: string; a: string }[];
-  
   ctaSection: {
     title: string;
     text: string;
@@ -39,16 +37,12 @@ interface ServiceData {
   };
 }
 
-// =========================================================================
-// ADDED SEO DYNAMIC METADATA GENERATOR
-// =========================================================================
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
 
-  // Fetch only the fields needed for SEO
   const { data: service } = await supabase
     .from("services")
     .select("title, meta_description")
@@ -67,20 +61,19 @@ export async function generateMetadata(
     },
   };
 }
-// =========================================================================
 
 async function getService(slug: string): Promise<ServiceData | null> {
   const decodedSlug = decodeURIComponent(slug).trim();
 
-  // Exact match query
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('services')
     .select('*')
     .eq('slug', decodedSlug)
     .single();
 
-  // Fallback search if exact slug has formatting variants
-  if (error || !data) {
+  let resolvedData = data;
+
+  if (error || !resolvedData) {
     const { data: fallbackData } = await supabase
       .from('services')
       .select('*')
@@ -88,27 +81,26 @@ async function getService(slug: string): Promise<ServiceData | null> {
       .limit(1);
 
     if (fallbackData && fallbackData.length > 0) {
-      data = fallbackData[0];
+      resolvedData = fallbackData[0];
     }
   }
 
-  if (!data) {
+  if (!resolvedData) {
     return null;
   }
 
   return {
-    slug: data.slug,
-    title: data.title,
-    subMenu: data.sub_menu,
-    category: data.category,
-    h1: data.h1 || data.title,
-    introParagraphs: data.intro_paragraphs || [],
-    featuresSection: data.features_section || { title: "", list: [] },
-    subServices: data.sub_services || [],
-    comparisonSection: data.comparison_section,
-    faqs: data.faqs || [],
-    
-    ctaSection: data.cta_section || { title: "Ready to Get Started?", text: "Connect with our experts today.", buttonText: "Enquire Now" },
+    slug: resolvedData.slug,
+    title: resolvedData.title,
+    subMenu: resolvedData.sub_menu,
+    category: resolvedData.category,
+    h1: resolvedData.h1 || resolvedData.title,
+    introParagraphs: resolvedData.intro_paragraphs || [],
+    featuresSection: resolvedData.features_section || { title: "", list: [] },
+    subServices: resolvedData.sub_services || [],
+    comparisonSection: resolvedData.comparison_section,
+    faqs: resolvedData.faqs || [],
+    ctaSection: resolvedData.cta_section || { title: "Ready to Get Started?", text: "Connect with our experts today.", buttonText: "Enquire Now" },
   };
 }
 
@@ -124,8 +116,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="w-full flex flex-col bg-brand-light text-brand-dark">
-
-      {/* 1. HERO SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
         <div className="mb-4 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
           <Link href="/" className="hover:text-brand-purple">Home</Link> <span className="text-brand-gold">›</span> <Link href="/services" className="hover:text-brand-purple">Services</Link> <span className="text-brand-gold">›</span> <span className="text-brand-purple">{breadcrumbLabel}</span>
@@ -138,13 +128,12 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               {service.h1}
             </h1>
 
-            <div className="space-y-4 mb-8 max-w-2xl">
+            <div className="space-y-4 mb-8 max-w-2xl text-gray-600 text-base leading-relaxed [&_p]:mb-4 [&_a]:text-brand-purple [&_a]:underline [&_a:hover]:opacity-80">
               {service.introParagraphs.map((para, idx) => (
-                  <p 
-                    key={idx} 
-                    className="text-gray-600 text-base leading-relaxed [&_a]:text-brand-purple [&_a]:underline [&_a:hover]:opacity-80"
-                    dangerouslySetInnerHTML={{ __html: para }}
-                  />
+                <div 
+                  key={idx} 
+                  dangerouslySetInnerHTML={{ __html: para }}
+                />
               ))}
             </div>
           </div>
@@ -155,7 +144,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
       </section>
 
-      {/* 2. CORE FEATURES GRID */}
       {service.featuresSection && service.featuresSection.list && service.featuresSection.list.length > 0 && (
         <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-gray-200">
           <div className="max-w-7xl mx-auto text-center mb-16">
@@ -187,7 +175,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </section>
       )}
 
-      {/* 3. SUB-SERVICES */}
       {service.subServices && service.subServices.length > 0 && (
         <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light border-t border-gray-200">
           <div className="max-w-7xl mx-auto text-center mb-16">
@@ -205,7 +192,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </section>
       )}
 
-      {/* 4. COMPARISON TABLE */}
       {service.comparisonSection && service.comparisonSection.data && service.comparisonSection.data.length > 0 && (
         <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-purple text-white">
           <div className="max-w-6xl mx-auto text-center mb-16">
@@ -236,10 +222,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </section>
       )}
 
-      {/* 5. FAQ SECTION (INTERACTIVE DROPDOWN ACCORDION) */}
       <FaqAccordion faqs={service.faqs} />
 
-      {/* 7. BOTTOM CTA */}
       <section className="w-full py-20 bg-brand-purple text-white px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
           <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{service.ctaSection.title}</h2>
@@ -251,7 +235,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </a>
         </div>
       </section>
-
     </div>
   );
 }

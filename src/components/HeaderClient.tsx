@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -14,7 +15,6 @@ interface Service {
 }
 
 export default function HeaderClient({
-  services = [],
   mastersServices = [],
   researchPlanning = [],
   researchDevelopment = [],
@@ -25,7 +25,7 @@ export default function HeaderClient({
   implementation = [],
   academicSupport = [],
 }: {
-  services: Service[];
+  services?: Service[];
   mastersServices: Service[];
   researchPlanning: Service[];
   researchDevelopment: Service[];
@@ -54,9 +54,11 @@ export default function HeaderClient({
           {/* Logo Section */}
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center gap-0.5">
-              <img 
+              <Image 
                 src="/favcon.png" 
                 alt="Clearby Research Logo" 
+                width={36}
+                height={36}
                 className="w-9 h-9 object-contain rounded-sm" 
               />
               <div className="flex flex-col">
@@ -129,10 +131,10 @@ export default function HeaderClient({
               </div>
             </div>
 
-            {/* Master's Dropdown Menu */}
+            {/* Master&apos;s Dropdown Menu */}
             <div className="relative group py-4">
               <Link href="/services" className="transition flex items-center gap-1 hover:text-brand-purple">
-                Master's 
+                Master&apos;s 
                 <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" />
               </Link>
               
@@ -144,7 +146,7 @@ export default function HeaderClient({
                     </Link>
                   ))
                 ) : (
-                  <p className="text-xs text-gray-400 col-span-2">No Master's services found.</p>
+                  <p className="text-xs text-gray-400 col-span-2">No Master&apos;s services found.</p>
                 )}
               </div>
             </div>
@@ -215,8 +217,6 @@ export default function HeaderClient({
               Schedule Free Consultation
             </Link>
           </div>
-
-
 
           {/* Mobile Hamburger Button */}
           <div className="flex lg:hidden items-center">
@@ -303,7 +303,7 @@ export default function HeaderClient({
               onClick={() => toggleSection("masters")}
               className="w-full flex justify-between items-center text-sm font-semibold text-gray-800 py-1"
             >
-              <span>Master's Services</span>
+              <span>Master&apos;s Services</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${openSection === "masters" ? "rotate-180" : ""}`} />
             </button>
             {openSection === "masters" && (

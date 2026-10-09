@@ -2,12 +2,11 @@
   "name": "clear-by-research",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build --webpack",
-    "start": "next start",
-    "lint": "eslint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start -p ${PORT:-3000}"
+},
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
     "@tiptap/extension-highlight": "^3.31.4",
