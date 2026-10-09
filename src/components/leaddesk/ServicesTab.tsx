@@ -104,8 +104,6 @@ export default function ServicesTab() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Destructure out the internal auto-generated ID if inserting a new record 
-    // so Supabase generates the UUID properly without conflict.
     const { id, ...rest } = formData;
     const payload = { ...rest, updated_at: new Date().toISOString() };
     
@@ -221,7 +219,6 @@ export default function ServicesTab() {
               ))}
             </div>
             
-            {/* WRAPPED IN <form> SO SUBMIT AND ENTER KEY WORK NATIVELY */}
             <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-8 overflow-y-auto space-y-6 flex-1 bg-white">
                 
@@ -308,17 +305,29 @@ export default function ServicesTab() {
                       </div>
 
                       {formData.features_section?.list?.map((item, idx) => (
-                        <div key={idx} className="grid grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-slate-200 relative">
+                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3 relative">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-slate-500">Feature Item #{idx + 1}</span>
+                            <button type="button" onClick={() => {
+                              const list = [...formData.features_section!.list];
+                              list.splice(idx, 1);
+                              setFormData({...formData, features_section: { ...formData.features_section!, list }});
+                            }} className="text-red-500 text-xs font-semibold cursor-pointer">Delete</button>
+                          </div>
                           <input placeholder="Feature Title" value={item.title} onChange={e => {
                             const list = [...formData.features_section!.list];
                             list[idx].title = e.target.value;
                             setFormData({...formData, features_section: { ...formData.features_section!, list }});
-                          }} className="border rounded-lg p-2 text-xs font-semibold" />
-                          <input placeholder="Feature Description" value={item.desc} onChange={e => {
-                            const list = [...formData.features_section!.list];
-                            list[idx].desc = e.target.value;
-                            setFormData({...formData, features_section: { ...formData.features_section!, list }});
-                          }} className="border rounded-lg p-2 text-xs" />
+                          }} className="w-full border rounded-lg p-2 text-xs font-semibold" />
+                          
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Feature Description (Rich Text)</label>
+                            <RichTextEditor content={item.desc} onChange={(html) => {
+                              const list = [...formData.features_section!.list];
+                              list[idx].desc = html;
+                              setFormData({...formData, features_section: { ...formData.features_section!, list }});
+                            }} />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -330,17 +339,29 @@ export default function ServicesTab() {
                         <button type="button" onClick={() => setFormData({...formData, sub_services: [...(formData.sub_services || []), { title: "", desc: "" }]})} className="text-xs text-indigo-600 font-bold cursor-pointer">+ Add Sub-service</button>
                       </div>
                       {formData.sub_services?.map((sub, idx) => (
-                        <div key={idx} className="grid grid-cols-2 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3 relative">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-slate-500">Sub-Service #{idx + 1}</span>
+                            <button type="button" onClick={() => {
+                              const list = [...formData.sub_services!];
+                              list.splice(idx, 1);
+                              setFormData({...formData, sub_services: list});
+                            }} className="text-red-500 text-xs font-semibold cursor-pointer">Delete</button>
+                          </div>
                           <input placeholder="Sub-service Title" value={sub.title} onChange={e => {
                             const list = [...formData.sub_services!];
                             list[idx].title = e.target.value;
                             setFormData({...formData, sub_services: list});
-                          }} className="border rounded-lg p-2 text-xs font-semibold" />
-                          <input placeholder="Sub-service Description" value={sub.desc} onChange={e => {
-                            const list = [...formData.sub_services!];
-                            list[idx].desc = e.target.value;
-                            setFormData({...formData, sub_services: list});
-                          }} className="border rounded-lg p-2 text-xs" />
+                          }} className="w-full border rounded-lg p-2 text-xs font-semibold" />
+
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Sub-service Description (Rich Text)</label>
+                            <RichTextEditor content={sub.desc} onChange={(html) => {
+                              const list = [...formData.sub_services!];
+                              list[idx].desc = html;
+                              setFormData({...formData, sub_services: list});
+                            }} />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -362,22 +383,39 @@ export default function ServicesTab() {
                     </div>
 
                     {formData.comparison_section?.data?.map((row, idx) => (
-                      <div key={idx} className="grid grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                      <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3 relative">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-500">Row #{idx + 1}</span>
+                          <button type="button" onClick={() => {
+                            const data = [...formData.comparison_section!.data];
+                            data.splice(idx, 1);
+                            setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
+                          }} className="text-red-500 text-xs font-semibold cursor-pointer">Delete</button>
+                        </div>
                         <input placeholder="Feature / Metric" value={row.feature} onChange={e => {
                           const data = [...formData.comparison_section!.data];
                           data[idx].feature = e.target.value;
                           setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
-                        }} className="border rounded-lg p-2 text-xs font-semibold" />
-                        <input placeholder="Generic Providers" value={row.generic} onChange={e => {
-                          const data = [...formData.comparison_section!.data];
-                          data[idx].generic = e.target.value;
-                          setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
-                        }} className="border rounded-lg p-2 text-xs" />
-                        <input placeholder="Clearby Research" value={row.clearby} onChange={e => {
-                          const data = [...formData.comparison_section!.data];
-                          data[idx].clearby = e.target.value;
-                          setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
-                        }} className="border rounded-lg p-2 text-xs font-bold text-indigo-600" />
+                        }} className="w-full border rounded-lg p-2 text-xs font-semibold" />
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Generic Providers (Rich Text)</label>
+                            <RichTextEditor content={row.generic} onChange={(html) => {
+                              const data = [...formData.comparison_section!.data];
+                              data[idx].generic = html;
+                              setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
+                            }} />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-indigo-500 mb-1">Clearby Research Advantage (Rich Text)</label>
+                            <RichTextEditor content={row.clearby} onChange={(html) => {
+                              const data = [...formData.comparison_section!.data];
+                              data[idx].clearby = html;
+                              setFormData({...formData, comparison_section: { ...formData.comparison_section!, data }});
+                            }} />
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -398,16 +436,24 @@ export default function ServicesTab() {
                             copy.splice(idx, 1);
                             setFormData({...formData, faqs: copy});
                           }} className="absolute right-4 top-4 text-red-500 text-xs font-semibold cursor-pointer">Delete</button>
-                          <input placeholder="Question" value={faq.q} onChange={e => {
-                            const copy = [...(formData.faqs || [])];
-                            copy[idx].q = e.target.value;
-                            setFormData({...formData, faqs: copy});
-                          }} className="w-full border border-slate-200 rounded-xl p-3 text-xs font-bold bg-white" />
-                          <textarea placeholder="Answer" rows={2} value={faq.a} onChange={e => {
-                            const copy = [...(formData.faqs || [])];
-                            copy[idx].a = e.target.value;
-                            setFormData({...formData, faqs: copy});
-                          }} className="w-full border border-slate-200 rounded-xl p-3 text-xs bg-white resize-none" />
+                          
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Question</label>
+                            <input placeholder="Question" value={faq.q} onChange={e => {
+                              const copy = [...(formData.faqs || [])];
+                              copy[idx].q = e.target.value;
+                              setFormData({...formData, faqs: copy});
+                            }} className="w-full border border-slate-200 rounded-xl p-3 text-xs font-bold bg-white" />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Answer (Rich Text with Links)</label>
+                            <RichTextEditor content={faq.a} onChange={(html) => {
+                              const copy = [...(formData.faqs || [])];
+                              copy[idx].a = html;
+                              setFormData({...formData, faqs: copy});
+                            }} />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -415,9 +461,20 @@ export default function ServicesTab() {
                     {/* CTA Section */}
                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
                       <h3 className="font-bold text-sm text-slate-800 uppercase tracking-wider">Bottom Call-to-Action (CTA)</h3>
-                      <input placeholder="CTA Title" value={formData.cta_section?.title || ""} onChange={e => setFormData({...formData, cta_section: { ...formData.cta_section!, title: e.target.value }})} className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-white" />
-                      <input placeholder="CTA Subtext" value={formData.cta_section?.text || ""} onChange={e => setFormData({...formData, cta_section: { ...formData.cta_section!, text: e.target.value }})} className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-white" />
-                      <input placeholder="Button Text" value={formData.cta_section?.buttonText || ""} onChange={e => setFormData({...formData, cta_section: { ...formData.cta_section!, buttonText: e.target.value }})} className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-white" />
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">CTA Title</label>
+                        <input placeholder="CTA Title" value={formData.cta_section?.title || ""} onChange={e => setFormData({...formData, cta_section: { ...formData.cta_section!, title: e.target.value }})} className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-white" />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">CTA Subtext (Rich Text)</label>
+                        <RichTextEditor content={formData.cta_section?.text || ""} onChange={(html) => setFormData({...formData, cta_section: { ...formData.cta_section!, text: html }})} />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Button Text</label>
+                        <input placeholder="Button Text" value={formData.cta_section?.buttonText || ""} onChange={e => setFormData({...formData, cta_section: { ...formData.cta_section!, buttonText: e.target.value }})} className="w-full border border-slate-200 rounded-xl p-3 text-sm bg-white" />
+                      </div>
                     </div>
                   </div>
                 )}
