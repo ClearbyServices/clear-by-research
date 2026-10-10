@@ -161,7 +161,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 <CheckCircle2 className="w-6 h-6 text-brand-gold shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-lg font-serif font-bold text-brand-purple mb-2">{feat.title}</h3>
-                  <p className="text-xs text-gray-600 leading-relaxed">{feat.desc}</p>
+                  <div 
+                    className="text-xs text-gray-600 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-purple" 
+                    dangerouslySetInnerHTML={{ __html: feat.desc }} 
+                  />
                 </div>
               </div>
             ))}
@@ -185,7 +188,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             {service.subServices.map((sub, idx) => (
               <div key={idx} className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
                 <h3 className="font-serif font-bold text-brand-purple mb-2">{sub.title}</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">{sub.desc}</p>
+                <div 
+                  className="text-xs text-gray-600 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-purple" 
+                  dangerouslySetInnerHTML={{ __html: sub.desc }} 
+                />
               </div>
             ))}
           </div>
@@ -212,8 +218,12 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 {service.comparisonSection.data.map((row, idx) => (
                   <tr key={idx} className="hover:bg-white/5 transition">
                     <td className="py-4 px-6 font-bold text-white">{row.feature}</td>
-                    <td className="py-4 px-6 text-gray-400">{row.generic}</td>
-                    <td className="py-4 px-6 text-brand-gold font-semibold">{row.clearby}</td>
+                    <td className="py-4 px-6 text-gray-400">
+                      <div dangerouslySetInnerHTML={{ __html: row.generic }} />
+                    </td>
+                    <td className="py-4 px-6 text-brand-gold font-semibold">
+                      <div dangerouslySetInnerHTML={{ __html: row.clearby }} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -227,9 +237,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       <section className="w-full py-20 bg-brand-purple text-white px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
           <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{service.ctaSection.title}</h2>
-          <p className="text-gray-300 text-sm max-w-xl mx-auto mb-8 leading-relaxed">
-            {service.ctaSection.text}
-          </p>
+          <div 
+            className="text-gray-300 text-sm max-w-xl mx-auto mb-8 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-gold"
+            dangerouslySetInnerHTML={{ __html: service.ctaSection.text }}
+          />
           <a href="/contact" className="bg-brand-gold text-brand-purple font-bold py-3.5 px-8 rounded-sm hover:opacity-90 transition inline-block text-xs uppercase tracking-wider shadow-md">
             {service.ctaSection.buttonText} <ArrowRight className="inline ml-1 w-4 h-4" />
           </a>
