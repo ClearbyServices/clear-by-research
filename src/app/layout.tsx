@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
+import CrispChat from "@/components/CrispChat";
 
 // Load the modern Sans font for body text
 const inter = Inter({
@@ -64,6 +65,7 @@ export default function RootLayout({
         <main className="flex-grow">{children}</main>
         <Footer />
         <BackToTop />
+        <CrispChat />
       </body>
     </html>
   );

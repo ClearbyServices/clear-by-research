@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink, Sparkles } from "lucide-react";
 
 // Types & Config
 import { CRM, Lead, SOURCES, STATUSES, PRIORITIES } from "../../types/crm";
@@ -97,26 +97,40 @@ export default function LeadDesk() {
   }, [showLeadModal, showCrmModal]);
 
   const fetchData = useCallback(async () => {
-    const { data: leadData } = await supabase.from("leads").select("*");
-    const { data: adsData } = await supabase.from("google_ads_leads").select("*");
-    const combinedLeads = [
-      ...(leadData || []).map(l => ({ ...l, table_name: "leads" as const })),
-      ...(adsData || []).map(l => ({ ...l, table_name: "google_ads_leads" as const }))
-    ];
-    combinedLeads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setLeads(combinedLeads);
+    setLoading(true);
+    try {
+      const { data: leadData } = await supabase.from("leads").select("*");
+      const { data: adsData } = await supabase.from("google_ads_leads").select("*");
+      const combinedLeads = [
+        ...(leadData || []).map(l => ({ ...l, table_name: "leads" as const })),
+        ...(adsData || []).map(l => ({ ...l, table_name: "google_ads_leads" as const }))
+      ];
+      combinedLeads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setLeads(combinedLeads);
 
-    const { data: crmData } = await supabase.from("crms").select("*");
-    if (crmData && crmData.length > 0) {
-      setCrms(crmData);
-    } else {
-      setCrms([{ id: "CRM-ADMIN", name: "Admin User", email: "admin@clearby.com", password: "admin123", phone: "9999999999", role: "Administrator" }]);
+      const { data: crmData } = await supabase.from("crms").select("*");
+      if (crmData && crmData.length > 0) {
+        setCrms(crmData);
+      } else {
+        setCrms([{ id: "CRM-ADMIN", name: "Admin User", email: "admin@clearby.com", password: "admin123", phone: "9999999999", role: "Administrator" }]);
+      }
+    } catch (error) {
+      console.error("Error fetching LeadDesk data:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+    if (isMounted) {
+      setTimeout(() => {
+        fetchData();
+      }, 0);
+    }
+    return () => {
+      isMounted = false;
+    };
   }, [fetchData]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -297,6 +311,7 @@ export default function LeadDesk() {
             { id: "dashboard", label: "Analytics", icon: <LayoutDashboard className="w-5 h-5" /> },
             { id: "list", label: "Lead Tickets", icon: <ListIcon className="w-5 h-5" /> },
             { id: "kanban", label: "Pipeline", icon: <Kanban className="w-5 h-5" /> },
+            { id: "chat", label: "Live Chat Inbox", icon: <MessageSquare className="w-5 h-5" /> },
             ...(isAdmin ? [
               { id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> },
               { id: "services", label: "Manage Services", icon: <Layers className="w-5 h-5" /> },
@@ -338,7 +353,7 @@ export default function LeadDesk() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <button onClick={() => { setLoading(true); fetchData(); }} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Refresh Live Data">
+            <button onClick={() => fetchData()} className="text-gray-400 hover:text-indigo-600 transition-colors" title="Refresh Live Data">
               <RefreshCcw className={`w-5 h-5 ${loading ? "animate-spin text-indigo-600" : ""}`} />
             </button>
             <select
@@ -349,7 +364,7 @@ export default function LeadDesk() {
               <option value="All">All Statuses</option>
               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
             </select>
-            {isAdmin && activeTab !== "services" && activeTab !== "blog" && (
+            {isAdmin && activeTab !== "services" && activeTab !== "blog" && activeTab !== "chat" && (
               <button
                 onClick={() => setShowLeadModal(true)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"
@@ -370,6 +385,28 @@ export default function LeadDesk() {
               {activeTab === "dashboard" && <AnalyticsTab totalLeads={totalLeads} quotedLeads={quotedLeads} convertedLeads={convertedLeads} conversionRate={conversionRate} leadsBySource={leadsBySource} isAdmin={isAdmin} crms={crms} leads={leads} />}
               {activeTab === "list" && <LeadListTab filteredLeads={filteredLeads} crms={crms} isAdmin={isAdmin} updateLeadStatus={updateLeadStatus} reassignLead={reassignLead} setActionModal={setActionModal} />}
               {activeTab === "kanban" && <KanbanTab filteredLeads={filteredLeads} crms={crms} updateLeadStatus={updateLeadStatus} />}
+              {activeTab === "chat" && (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-white rounded-2xl border border-slate-200 shadow-sm text-center">
+                  <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
+                    <MessageSquare className="w-8 h-8" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Live Chat & Visitor Inbox</h2>
+                  <p className="text-sm text-gray-500 max-w-md mb-6">
+                    Manage real-time scholar conversations, monitor active website visitors, and reply instantly from your dedicated Crisp support dashboard.
+                  </p>
+                  <a
+                    href="https://app.crisp.chat/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shadow-md transition"
+                  >
+                    Launch Crisp Agent Dashboard <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <p className="text-xs text-gray-400 mt-4">
+                    Tip: You can also download the Crisp mobile app on your office phone for instant push notifications!
+                  </p>
+                </div>
+              )}
               {activeTab === "crm" && isAdmin && <TeamTab crms={crms} leads={leads} setEditingCrm={setEditingCrm} setShowCrmModal={setShowCrmModal} deleteCrm={deleteCrm} />}
               {activeTab === "services" && isAdmin && <ServicesTab />}
               {activeTab === "blog" && isAdmin && <BlogTab />}
