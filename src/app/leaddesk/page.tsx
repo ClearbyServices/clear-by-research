@@ -15,10 +15,7 @@ import LeadListTab from "@/components/leaddesk/LeadListTab";
 import ServicesTab from "@/components/leaddesk/ServicesTab";
 import BlogTab from "@/components/leaddesk/BlogTab";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ltywtxqwuzhtovbqyaiv.supabase.co",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY_HERE"
-);
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LeadDesk() {
   const isMounted = useSyncExternalStore(() => () => {}, () => true, () => false);

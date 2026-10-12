@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ltywtxqwuzhtovbqyaiv.supabase.co",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+import { supabase } from "@/lib/supabaseClient";
 
 interface BlogPost {
   id: string;
