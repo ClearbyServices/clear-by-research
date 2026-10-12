@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink, Sparkles } from "lucide-react";
+import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink } from "lucide-react";
 
 // Types & Config
 import { CRM, Lead, SOURCES, STATUSES, PRIORITIES } from "../../types/crm";
