@@ -18,6 +18,10 @@ export default function ServicesTab() {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [modalTab, setModalTab] = useState<"general" | "content" | "features" | "comparison" | "faqs">("general");
 
+  // Page Header State & Modal
+  const [showPageHeaderModal, setShowPageHeaderModal] = useState(false);
+  const [pageHeader, setPageHeader] = useState({ badge: "", title: "", description: "" });
+
   const [formData, setFormData] = useState<Service>({
     title: "",
     slug: "",
@@ -38,26 +42,79 @@ export default function ServicesTab() {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchServices = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from("services").select("*").order("menu_order", { ascending: true });
+      const { data: servicesData, error: servicesError } = await supabase
+        .from("services")
+        .select("*")
+        .order("menu_order", { ascending: true });
 
       if (!isMounted) return;
 
-      if (error) {
-        console.error("Error fetching services:", error.message);
-      } else if (data) {
-        setServices(data);
+      if (servicesError) {
+        console.error("Error fetching services:", servicesError.message);
+      } else if (servicesData) {
+        setServices(servicesData);
       }
       setLoading(false);
     };
 
-    void fetchServices();
+    void fetchData();
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  // Fetch header fresh from Supabase the moment the modal opens
+  const openHeaderModal = async () => {
+    const { data, error } = await supabase
+      .from("page_settings")
+      .select("*")
+      .eq("page_key", "services_page")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching page header:", error.message);
+    }
+
+    if (data) {
+      setPageHeader({
+        badge: data.badge || data.h1 || "",
+        title: data.title || "",
+        description: data.description || data.meta_description || ""
+      });
+    } else {
+      setPageHeader({
+        badge: "Academic Advisory Suite",
+        title: "Our Services",
+        description: "Comprehensive academic support, tailored to every milestone of your scholarly journey."
+      });
+    }
+
+    setShowPageHeaderModal(true);
+  };
+
+  const handleSaveHeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase
+      .from("page_settings")
+      .upsert({
+        page_key: "services_page",
+        badge: pageHeader.badge,
+        title: pageHeader.title,
+        description: pageHeader.description,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "page_key" });
+
+    if (!error) {
+      alert("Services page header updated successfully!");
+      setShowPageHeaderModal(false);
+    } else {
+      console.error("Header Update Error:", error);
+      alert(`Error updating header: ${error.message}`);
+    }
+  };
 
   const openModal = (service?: Service) => {
     setModalTab("general");
@@ -103,7 +160,6 @@ export default function ServicesTab() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const { id, ...rest } = formData;
     const payload = { ...rest, updated_at: new Date().toISOString() };
     
@@ -148,9 +204,14 @@ export default function ServicesTab() {
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Services & Landing Pages</h2>
           <p className="text-sm text-slate-500 mt-1">Complete control over every column in your Supabase services table.</p>
         </div>
-        <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer">
-          <Plus className="w-4 h-4" /> Add Service
-        </button>
+        <div className="flex gap-3">
+          <button onClick={openHeaderModal} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer">
+            Edit Page Header
+          </button>
+          <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+            <Plus className="w-4 h-4" /> Add Service
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -187,7 +248,35 @@ export default function ServicesTab() {
         </div>
       )}
 
-      {/* MODAL WITH FORM WRAPPER */}
+      {/* PAGE HEADER EDIT MODAL */}
+      {showPageHeaderModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
+          <form onSubmit={handleSaveHeader} className="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-8 space-y-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              <h2 className="text-xl font-bold text-slate-900">Edit Services Page Header</h2>
+              <button type="button" onClick={() => setShowPageHeaderModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5"/></button>
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Badge Text (e.g. Academic Advisory Suite)</label>
+              <input value={pageHeader.badge} onChange={e => setPageHeader({...pageHeader, badge: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Main H1 Title (e.g. Our Services)</label>
+              <input value={pageHeader.title} onChange={e => setPageHeader({...pageHeader, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Introductory Description</label>
+              <textarea rows={4} value={pageHeader.description} onChange={e => setPageHeader({...pageHeader, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <button type="button" onClick={() => setShowPageHeaderModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-sm">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* SERVICE EDIT/CREATE MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[92vh] overflow-hidden border border-slate-100">

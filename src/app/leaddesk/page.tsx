@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink } from "lucide-react";
+import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink, Award } from "lucide-react";
 
 // Types & Config
 import { CRM, Lead, SOURCES, STATUSES, PRIORITIES } from "../../types/crm";
@@ -14,6 +13,7 @@ import TeamTab from "@/components/leaddesk/TeamTab";
 import LeadListTab from "@/components/leaddesk/LeadListTab";
 import ServicesTab from "@/components/leaddesk/ServicesTab";
 import BlogTab from "@/components/leaddesk/BlogTab";
+import AboutTab from "@/components/leaddesk/AboutTab";
 
 import { supabase } from "@/lib/supabaseClient";
 
@@ -296,14 +296,14 @@ export default function LeadDesk() {
     <div className="fixed inset-0 flex bg-gray-50 text-slate-800 font-sans overflow-hidden z-50">
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
         <div className="p-6 text-2xl font-bold tracking-wider flex items-center gap-2 text-indigo-600 border-b border-gray-100">
-          <LayoutDashboard className="w-7 h-7" /> LeadDesk
+          LeadDesk
         </div>
         <div className="p-4 mx-4 mt-4 bg-indigo-50/60 rounded-xl border border-indigo-100/50">
           <p className="text-xs text-indigo-600 font-bold uppercase tracking-wider">Signed in as</p>
           <p className="font-bold text-slate-800 text-sm truncate mt-0.5">{currentUser.name}</p>
           <p className="text-[11px] text-gray-500 capitalize">{currentUser.role}</p>
         </div>
-        <nav className="flex-1 px-4 space-y-1.5 mt-4">
+        <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto">
           {[
             { id: "dashboard", label: "Analytics", icon: <LayoutDashboard className="w-5 h-5" /> },
             { id: "list", label: "Lead Tickets", icon: <ListIcon className="w-5 h-5" /> },
@@ -312,7 +312,8 @@ export default function LeadDesk() {
             ...(isAdmin ? [
               { id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> },
               { id: "services", label: "Manage Services", icon: <Layers className="w-5 h-5" /> },
-              { id: "blog", label: "Manage Blog", icon: <FileText className="w-5 h-5" /> }
+              { id: "blog", label: "Manage Blog", icon: <FileText className="w-5 h-5" /> },
+              { id: "about", label: "Manage About Faculty", icon: <Award className="w-5 h-5" /> }
             ] : []),
           ].map((item) => (
             <button
@@ -361,7 +362,7 @@ export default function LeadDesk() {
               <option value="All">All Statuses</option>
               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
             </select>
-            {isAdmin && activeTab !== "services" && activeTab !== "blog" && activeTab !== "chat" && (
+            {isAdmin && activeTab !== "services" && activeTab !== "blog" && activeTab !== "about" && activeTab !== "chat" && (
               <button
                 onClick={() => setShowLeadModal(true)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"
@@ -407,6 +408,7 @@ export default function LeadDesk() {
               {activeTab === "crm" && isAdmin && <TeamTab crms={crms} leads={leads} setEditingCrm={setEditingCrm} setShowCrmModal={setShowCrmModal} deleteCrm={deleteCrm} />}
               {activeTab === "services" && isAdmin && <ServicesTab />}
               {activeTab === "blog" && isAdmin && <BlogTab />}
+              {activeTab === "about" && isAdmin && <AboutTab />}
             </>
           )}
         </div>

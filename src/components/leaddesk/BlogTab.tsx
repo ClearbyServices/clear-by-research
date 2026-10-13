@@ -17,6 +17,10 @@ export default function BlogTab() {
   const [showModal, setShowModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
 
+  // Page Header State & Modal
+  const [showPageHeaderModal, setShowPageHeaderModal] = useState(false);
+  const [pageHeader, setPageHeader] = useState({ badge: "", title: "", description: "" });
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -39,6 +43,56 @@ export default function BlogTab() {
     const { data } = await supabase.from("blogs").select("*").order("created_at", { ascending: false });
     if (data) setBlogs(data);
     setLoading(false);
+  };
+
+  // Fetch blog page header fresh from Supabase the moment the modal opens
+  const openHeaderModal = async () => {
+    const { data, error } = await supabase
+      .from("page_settings")
+      .select("*")
+      .eq("page_key", "blog_page")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching blog page header:", error.message);
+    }
+
+    if (data) {
+      setPageHeader({
+        badge: data.badge || "Academic Journal",
+        title: data.title || "Our Blog",
+        description: data.description || "Expert perspectives, publication tips, and research methodologies."
+      });
+    } else {
+      setPageHeader({
+        badge: "Academic Journal",
+        title: "Our Blog",
+        description: "Expert perspectives, publication tips, and research methodologies."
+      });
+    }
+
+    setShowPageHeaderModal(true);
+  };
+
+  const handleSaveHeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase
+      .from("page_settings")
+      .upsert({
+        page_key: "blog_page",
+        badge: pageHeader.badge,
+        title: pageHeader.title,
+        description: pageHeader.description,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "page_key" });
+
+    if (!error) {
+      alert("Blog page header updated successfully!");
+      setShowPageHeaderModal(false);
+    } else {
+      console.error("Header Update Error:", error);
+      alert(`Error updating header: ${error.message}`);
+    }
   };
 
   const openModal = (blog?: Blog) => {
@@ -105,12 +159,17 @@ export default function BlogTab() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Blog Articles</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Blog Articles & Header</h2>
           <p className="text-sm text-slate-500 mt-1">Publish guides, research tips, and SEO articles with rich formatting.</p>
         </div>
-        <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Article
-        </button>
+        <div className="flex gap-3">
+          <button onClick={openHeaderModal} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer">
+            Edit Page Header
+          </button>
+          <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+            <Plus className="w-4 h-4" /> New Article
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -164,10 +223,10 @@ export default function BlogTab() {
                     </button>
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => openModal(blog)} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors" title="Edit">
+                    <button onClick={() => openModal(blog)} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer" title="Edit">
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(blog.id, blog.title)} className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors" title="Delete">
+                    <button onClick={() => handleDelete(blog.id, blog.title)} className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer" title="Delete">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
@@ -178,7 +237,35 @@ export default function BlogTab() {
         </div>
       )}
 
-      {/* SPACIOUS MODAL */}
+      {/* BLOG PAGE HEADER EDIT MODAL */}
+      {showPageHeaderModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
+          <form onSubmit={handleSaveHeader} className="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-8 space-y-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              <h2 className="text-xl font-bold text-slate-900">Edit Blog Page Header</h2>
+              <button type="button" onClick={() => setShowPageHeaderModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5"/></button>
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Badge Text</label>
+              <input value={pageHeader.badge} onChange={e => setPageHeader({...pageHeader, badge: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Main H1 Title</label>
+              <input value={pageHeader.title} onChange={e => setPageHeader({...pageHeader, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Introductory Description</label>
+              <textarea rows={4} value={pageHeader.description} onChange={e => setPageHeader({...pageHeader, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <button type="button" onClick={() => setShowPageHeaderModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold shadow-sm">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ARTICLE EDIT / CREATE MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[92vh] overflow-hidden border border-slate-100">
@@ -190,72 +277,74 @@ export default function BlogTab() {
               <button onClick={() => setShowModal(false)} className="p-2.5 bg-white border border-slate-200 rounded-full text-slate-400 hover:text-slate-700 shadow-sm transition-colors"><X className="w-5 h-5"/></button>
             </div>
             
-            <div className="p-8 overflow-y-auto space-y-6 flex-1">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Article Title *</label>
-                  <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" placeholder="e.g. How to Choose a PhD Topic" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-8 overflow-y-auto space-y-6 flex-1 bg-white">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Article Title *</label>
+                    <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" placeholder="e.g. How to Choose a PhD Topic" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">URL Slug *</label>
+                    <input required value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} type="text" placeholder="e.g. how-to-choose-phd-topic" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">URL Slug *</label>
-                  <input required value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} type="text" placeholder="e.g. how-to-choose-phd-topic" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Category</label>
-                  <input value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                <div className="grid grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Category</label>
+                    <input value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Author Name</label>
+                    <input value={formData.author_name} onChange={e => setFormData({...formData, author_name: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Publish Status</label>
+                    <select value={formData.is_published ? "true" : "false"} onChange={e => setFormData({...formData, is_published: e.target.value === "true"})} className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 bg-white">
+                      <option value="true">Published</option>
+                      <option value="false">Draft</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Author Name</label>
-                  <input value={formData.author_name} onChange={e => setFormData({...formData, author_name: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Publish Status</label>
-                  <select value={formData.is_published ? "true" : "false"} onChange={e => setFormData({...formData, is_published: e.target.value === "true"})} className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 bg-white">
-                    <option value="true">Published</option>
-                    <option value="false">Draft</option>
-                  </select>
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Featured Image URL</label>
-                <input value={formData.featured_image} onChange={e => setFormData({...formData, featured_image: e.target.value})} type="text" placeholder="https://... or /blog/image.avif" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Short Excerpt / Summary</label>
-                <textarea rows={3} value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 resize-none" placeholder="Brief summary of the article..." />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Article Content (Word-like Rich Text Editor)</label>
-                <RichTextEditor 
-                  content={formData.content} 
-                  onChange={(html) => setFormData({...formData, content: html})} 
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">SEO Meta Title</label>
-                  <input value={formData.meta_title} onChange={e => setFormData({...formData, meta_title: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Featured Image URL</label>
+                  <input value={formData.featured_image} onChange={e => setFormData({...formData, featured_image: e.target.value})} type="text" placeholder="https://... or /blog/image.avif" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">SEO Meta Description</label>
-                  <input value={formData.meta_description} onChange={e => setFormData({...formData, meta_description: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Short Excerpt / Summary</label>
+                  <textarea rows={3} value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600 resize-none" placeholder="Brief summary of the article..." />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Article Content (Word-like Rich Text Editor)</label>
+                  <RichTextEditor 
+                    content={formData.content} 
+                    onChange={(html) => setFormData({...formData, content: html})} 
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">SEO Meta Title</label>
+                    <input value={formData.meta_title} onChange={e => setFormData({...formData, meta_title: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">SEO Meta Description</label>
+                    <input value={formData.meta_description} onChange={e => setFormData({...formData, meta_description: e.target.value})} type="text" className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600" />
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl shrink-0">
-              <button onClick={() => setShowModal(false)} className="px-6 py-3 text-sm text-slate-600 hover:bg-slate-200/60 rounded-xl font-semibold transition-colors">Cancel</button>
-              <button onClick={handleSave} className="px-6 py-3 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-sm transition-all">
-                {editingBlog ? "Save Article" : "Publish Article"}
-              </button>
-            </div>
+              
+              <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl shrink-0">
+                <button type="button" onClick={() => setShowModal(false)} className="px-6 py-3 text-sm text-slate-600 hover:bg-slate-200/60 rounded-xl font-semibold transition-colors">Cancel</button>
+                <button type="submit" className="px-6 py-3 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 shadow-sm transition-all">
+                  {editingBlog ? "Save Article" : "Publish Article"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
