@@ -30,12 +30,236 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": ["ProfessionalService", "Organization"],
+        "@id": "https://www.clearbyresearch.com/#organization",
+        "name": "E-Clearby Research Consulting Pvt. Ltd.",
+        "legalName": "E-Clearby Research Consulting Pvt. Ltd.",
+        "alternateName": ["Clearby Research", "E-Clearby Research"],
+        "url": "https://www.clearbyresearch.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://www.clearbyresearch.com/favcon.png",
+          "url": "https://www.clearbyresearch.com/favcon.png",
+          "caption": "E-Clearby Research Consulting"
+        },
+        "image": "https://www.clearbyresearch.com/favcon.png",
+        "description": "Advisory-only PhD, Master's and research paper guidance in Pune, India: topic consultation, proposal development, literature review, methodology, data analysis, thesis support, defence preparation and journal publication guidance. Scholars retain full authorship of their work.",
+        "slogan": "You drive the research. We guide you to excellence.",
+        "telephone": "+91-7020112146",
+        "email": "contact@clearbyresearch.com",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "VJ Indilife, Sus-Pashan Road, Vardayani Society, Sutarwadi, Pashan",
+          "addressLocality": "Pune",
+          "addressRegion": "Maharashtra",
+          "postalCode": "411021",
+          "addressCountry": "IN"
+        },
+        "hasMap": "https://maps.app.goo.gl/FLBdZ5kPNpmFqYFT7",
+        "areaServed": [
+          { "@type": "City", "name": "Pune" },
+          { "@type": "Country", "name": "India" }
+        ],
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "telephone": "+91-7020112146",
+            "email": "contact@clearbyresearch.com",
+            "areaServed": "IN",
+            "availableLanguage": ["English"]
+          }
+        ],
+        "sameAs": [
+          "https://www.linkedin.com/company/clearbyresearch/",
+          "https://www.facebook.com/share/19QAdaiSpy/",
+          "https://www.instagram.com/clearbyresearch",
+          "https://in.pinterest.com/0yz8vbtp9coatnn6btjos1aqmuxcmg/"
+        ],
+        "knowsAbout": [
+          "PhD research guidance",
+          "Research topic consultation",
+          "Research proposal development",
+          "Literature review",
+          "Systematic literature review",
+          "Research methodology",
+          "Questionnaire design",
+          "Quantitative and qualitative data analysis",
+          "SPSS, AMOS, SmartPLS, STATA and NVivo",
+          "Thesis and dissertation guidance",
+          "Thesis defence preparation",
+          "Journal publication guidance"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Academic research guidance services",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Topic Consultation",
+                "url": "https://www.clearbyresearch.com/services/phd-topic-consultation"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Thesis Problem Statement Guidance",
+                "url": "https://www.clearbyresearch.com/services/thesis-problem-statement"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Research Proposal Development",
+                "url": "https://www.clearbyresearch.com/services/research-proposal-development"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Literature Review Guidance",
+                "url": "https://www.clearbyresearch.com/services/literature-review-writing-service"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Systematic Literature Review Consultation",
+                "url": "https://www.clearbyresearch.com/services/systematic-literature-review-writing-service"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Research Methodology Consultation",
+                "url": "https://www.clearbyresearch.com/services/research-methodology-consultation"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Questionnaire Design",
+                "url": "https://www.clearbyresearch.com/services/research-paper-questionnaire-designing"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Thesis Data Analysis",
+                "url": "https://www.clearbyresearch.com/services/phd-thesis-data-analysis-service"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "SPSS Data Analysis",
+                "url": "https://www.clearbyresearch.com/services/spss-data-analysis-service"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Software Implementation Help for PhD Research",
+                "url": "https://www.clearbyresearch.com/services/software-implementation-help-for-phd-research"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Thesis Writing Guidance",
+                "url": "https://www.clearbyresearch.com/services/phd-thesis-writing-services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Thesis Editing and Proofreading",
+                "url": "https://www.clearbyresearch.com/services/phd-thesis-editing-&-proofreading-services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "PhD Thesis Defence Preparation",
+                "url": "https://www.clearbyresearch.com/services/phd-thesis-defence-preparation"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Master's Dissertation Topic Selection Help",
+                "url": "https://www.clearbyresearch.com/services/dissertation-topic-consultation"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Master's Dissertation Writing Guidance",
+                "url": "https://www.clearbyresearch.com/services/masters-dissertation-writing"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Research Manuscript Development Guidance",
+                "url": "https://www.clearbyresearch.com/services/research-manuscript-development-guidance"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Journal Publication Support",
+                "url": "https://www.clearbyresearch.com/services/journal-publication-support"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.clearbyresearch.com/#website",
+        "url": "https://www.clearbyresearch.com/",
+        "name": "E-Clearby Research",
+        "inLanguage": "en-IN",
+        "publisher": { "@id": "https://www.clearbyresearch.com/#organization" }
+      }
+    ]
+  };
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <head>
+        {/* Organization and Service Schema Markup */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+
         {/* Google Tag Manager */}
         <Script id="google-tag-manager" strategy="afterInteractive">
           {`
