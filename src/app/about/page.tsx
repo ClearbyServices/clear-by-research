@@ -29,13 +29,26 @@ export default async function AboutPage() {
     linkedin_url: f.linkedin_url || "#"
   }));
 
-  const coreValues = (valuesData || []).map(v => ({
+  const coreValues = (valuesData && valuesData.length > 0 ? valuesData : [
+    { title: "Expertise", description: "Research and methodological consultation tailored to your academic needs.", display_order: 1 },
+    { title: "Confidentiality", description: "Careful handling of your research, data, documents, and intellectual property.", display_order: 2 },
+    { title: "Integrity", description: "Responsible academic practices that respect originality and research ethics.", display_order: 3 },
+    { title: "Clarity", description: "Clear explanations, practical feedback, and structured academic input.", display_order: 4 },
+    { title: "Timeliness", description: "Reliable communication and delivery aligned with agreed timelines.", display_order: 5 }
+  ]).map(v => ({
     title: v.title,
     desc: v.description,
     icon: v.title === "Expertise" ? "🎓" : v.title === "Confidentiality" ? "🔒" : v.title === "Integrity" ? "⚖️" : v.title === "Clarity" ? "💡" : "⏱️"
   }));
 
-  const ethics = ethicsData || [];
+  const ethics = ethicsData && ethicsData.length > 0 ? ethicsData : [
+    { id: 1, point_number: 1, title: "Academic Integrity", description: "Academic integrity is central to our approach. Our services are designed to encourage appropriate research practices, accurate attribution, responsible use of sources, and adherence to applicable university and institutional requirements." },
+    { id: 2, point_number: 2, title: "Scholar Ownership", description: "The research thinking, interpretation, academic arguments, and final decisions remain with the scholar. We provide consultation and feedback; the scholar reviews, finalises, and submits the academic work." },
+    { id: 3, point_number: 3, title: "Advisory and Consultative Role", description: "Our role is to provide academic input—not to replace the researcher. We help scholars understand research concepts, evaluate methodological choices, respond to feedback, and strengthen the presentation of their own work." },
+    { id: 4, point_number: 4, title: "Transparent Engagement", description: "We believe scholars should clearly understand what a service includes before beginning an engagement. Our scope, deliverables, timelines, and responsibilities are communicated as clearly as possible." },
+    { id: 5, point_number: 5, title: "Respect for University Requirements", description: "Research requirements differ across universities, disciplines, programmes, and supervisors. We encourage scholars to follow the applicable institutional guidelines and use our consultation within those requirements." }
+  ];
+
   const hero = sections["hero"] || {};
   const foundingVision = sections["founding_vision"] || {};
   const approach = sections["approach"] || {};
@@ -113,6 +126,7 @@ export default async function AboutPage() {
       <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-2">Our Commitment to Research Ethics</h2>
+          <div className="w-20 h-0.5 bg-brand-gold mx-auto mt-3"></div>
         </div>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-6 text-base text-gray-700">
