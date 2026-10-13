@@ -34,16 +34,17 @@ export default function BlogTab() {
     meta_description: "",
   });
 
-  useEffect(() => {
-    fetchBlogs();
-  }, []);
-
+  // --- DEFINE FETCH FUNCTION FIRST (AVOIDS HOISTING ERRORS) ---
   const fetchBlogs = async () => {
     setLoading(true);
     const { data } = await supabase.from("blogs").select("*").order("created_at", { ascending: false });
     if (data) setBlogs(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
   // Fetch blog page header fresh from Supabase the moment the modal opens
   const openHeaderModal = async () => {
