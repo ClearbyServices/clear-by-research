@@ -88,13 +88,14 @@ export default async function AboutPage() {
               &ldquo;Intellectual progress is the result of shared dedication. We don&apos;t just facilitate research; we nurture the next generation of global thought leaders.&rdquo;
             </blockquote>
           </div>
-          <div className="w-full h-45 bg-gray-300 rounded-sm shadow-md overflow-hidden flex items-center justify-center relative">
-            <div className="bg-white p-4 border border-gray-200 shadow-sm rounded-sm">
-              <img 
-                src="Vision.png" 
-                alt="Clearby Research Vision" 
-              />
-            </div>
+          <div className="w-full h-full bg-gray-300 rounded-sm shadow-md overflow-hidden flex items-center justify-center relative">
+            <div className="w-full h-full rounded-sm shadow-md overflow-hidden flex items-center justify-center bg-white p-2 border border-gray-200">
+            <img 
+              src="/Vision.png" 
+              alt="Clearby Research Vision" 
+              className="w-full h-auto object-contain"
+            />
+          </div>
           </div>
         </div>
       </section>
