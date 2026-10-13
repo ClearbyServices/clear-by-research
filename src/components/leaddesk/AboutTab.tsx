@@ -48,7 +48,7 @@ interface FacultyMember {
 export default function AboutTab() {
   const [subTab, setSubTab] = useState<"sections" | "ethics" | "values" | "faculty">("sections");
   
-  // Data States
+  // Data States with robust defaults
   const [sections, setSections] = useState<AboutSection[]>([]);
   const [ethics, setEthics] = useState<EthicsPoint[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
@@ -77,7 +77,7 @@ export default function AboutTab() {
     async function loadAllAboutData() {
       setLoading(true);
       try {
-        const [{ data: sec }, { data: eth }, { data: val }, { data: fac }] = await Promise.all([
+        const [secRes, ethRes, valRes, facRes] = await Promise.all([
           supabase.from("about_sections").select("*").order("display_order", { ascending: true }),
           supabase.from("about_ethics").select("*").order("point_number", { ascending: true }),
           supabase.from("about_core_values").select("*").order("display_order", { ascending: true }),
@@ -85,10 +85,13 @@ export default function AboutTab() {
         ]);
 
         if (isMounted) {
-          if (sec) setSections(sec);
-          if (eth) setEthics(eth);
-          if (val) setValues(val);
-          if (fac) setFaculty(fac);
+          if (secRes.data) setSections(secRes.data);
+          if (ethRes.data) setEthics(ethRes.data);
+          if (valRes.data) setValues(valRes.data);
+          if (facRes.data) setFaculty(facRes.data);
+
+          if (ethRes.error) console.error("Error fetching about_ethics:", ethRes.error.message);
+          if (valRes.error) console.error("Error fetching about_core_values:", valRes.error.message);
         }
       } catch (err) {
         console.error("Error loading about data:", err);
@@ -259,7 +262,9 @@ export default function AboutTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {ethics.map((item) => (
+              {ethics.length === 0 ? (
+                <tr><td colSpan={3} className="p-8 text-center text-slate-400 text-xs">No ethics points found. Click &ldquo;Add Ethics Point&rdquo; above.</td></tr>
+              ) : ethics.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-5 text-center font-bold text-slate-400">{item.point_number}</td>
                   <td className="p-5">
@@ -302,7 +307,9 @@ export default function AboutTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {values.map((val) => (
+              {values.length === 0 ? (
+                <tr><td colSpan={3} className="p-8 text-center text-slate-400 text-xs">No core values found. Click &ldquo;Add Core Value&rdquo; above.</td></tr>
+              ) : values.map((val) => (
                 <tr key={val.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-5 text-center font-bold text-slate-400">{val.display_order}</td>
                   <td className="p-5">
