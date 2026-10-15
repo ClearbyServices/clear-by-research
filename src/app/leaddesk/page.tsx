@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
-import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink, Award } from "lucide-react";
+import { LayoutDashboard, List as ListIcon, Kanban, Users, Layers, FileText, Download, X, MessageCircle, Mail, RefreshCcw, LogOut, Lock, Mail as MailIcon, AlertTriangle, MessageSquare, ExternalLink, Award, Home } from "lucide-react";
 
 // Types & Config
 import { CRM, Lead, SOURCES, STATUSES, PRIORITIES } from "../../types/crm";
@@ -14,6 +14,7 @@ import LeadListTab from "@/components/leaddesk/LeadListTab";
 import ServicesTab from "@/components/leaddesk/ServicesTab";
 import BlogTab from "@/components/leaddesk/BlogTab";
 import AboutTab from "@/components/leaddesk/AboutTab";
+import HomeTab from "@/components/leaddesk/HomeTab";
 
 import { supabase } from "@/lib/supabaseClient";
 
@@ -309,12 +310,6 @@ export default function LeadDesk() {
             { id: "list", label: "Lead Tickets", icon: <ListIcon className="w-5 h-5" /> },
             { id: "kanban", label: "Pipeline", icon: <Kanban className="w-5 h-5" /> },
             { id: "chat", label: "Live Chat Inbox", icon: <MessageSquare className="w-5 h-5" /> },
-            ...(isAdmin ? [
-              { id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> },
-              { id: "services", label: "Manage Services", icon: <Layers className="w-5 h-5" /> },
-              { id: "blog", label: "Manage Blog", icon: <FileText className="w-5 h-5" /> },
-              { id: "about", label: "Manage About Faculty", icon: <Award className="w-5 h-5" /> }
-            ] : []),
           ].map((item) => (
             <button
               key={item.id}
@@ -326,6 +321,30 @@ export default function LeadDesk() {
               {item.icon} {item.label}
             </button>
           ))}
+
+          {isAdmin && (
+            <>
+              <div className="my-3 border-t border-gray-200" />
+              <div className="px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-gray-400">Content Management</div>
+              {[
+                { id: "home_page", label: "Manage Home", icon: <Home className="w-5 h-5" /> },
+                { id: "crm", label: "Team & CRMs", icon: <Users className="w-5 h-5" /> },
+                { id: "services", label: "Manage Services", icon: <Layers className="w-5 h-5" /> },
+                { id: "blog", label: "Manage Blog", icon: <FileText className="w-5 h-5" /> },
+                { id: "about", label: "Manage About Faculty", icon: <Award className="w-5 h-5" /> }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === item.id ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:bg-gray-100 hover:text-slate-900"
+                  }`}
+                >
+                  {item.icon} {item.label}
+                </button>
+              ))}
+            </>
+          )}
         </nav>
         <div className="p-4 border-t border-gray-100 space-y-2">
           {isAdmin && (
@@ -362,7 +381,7 @@ export default function LeadDesk() {
               <option value="All">All Statuses</option>
               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
             </select>
-            {isAdmin && activeTab !== "services" && activeTab !== "blog" && activeTab !== "about" && activeTab !== "chat" && (
+            {isAdmin && !["services", "blog", "about", "home_page", "chat"].includes(activeTab) && (
               <button
                 onClick={() => setShowLeadModal(true)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm transition-colors"
@@ -383,6 +402,7 @@ export default function LeadDesk() {
               {activeTab === "dashboard" && <AnalyticsTab totalLeads={totalLeads} quotedLeads={quotedLeads} convertedLeads={convertedLeads} conversionRate={conversionRate} leadsBySource={leadsBySource} isAdmin={isAdmin} crms={crms} leads={leads} />}
               {activeTab === "list" && <LeadListTab filteredLeads={filteredLeads} crms={crms} isAdmin={isAdmin} updateLeadStatus={updateLeadStatus} reassignLead={reassignLead} setActionModal={setActionModal} />}
               {activeTab === "kanban" && <KanbanTab filteredLeads={filteredLeads} crms={crms} updateLeadStatus={updateLeadStatus} />}
+              {activeTab === "home_page" && isAdmin && <HomeTab />}
               {activeTab === "chat" && (
                 <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-white rounded-2xl border border-slate-200 shadow-sm text-center">
                   <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
