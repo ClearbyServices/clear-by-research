@@ -6,12 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import ContactForm from "@/components/ContactForm";
 import { LampContainer } from "@/components/ui/lamp";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+import { supabase } from "@/lib/supabaseClient";
 
 interface HeroContent {
   badge: string;
