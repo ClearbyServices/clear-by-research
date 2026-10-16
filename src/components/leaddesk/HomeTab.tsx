@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon } from "lucide-react";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+import { supabase } from "@/lib/supabaseClient"; // Adjust path if your lib folder is elsewhere
 
 type SubTabType = "hero" | "stats" | "services" | "why" | "process" | "faqs" | "about_preview" | "ethics" | "faculty" | "disciplines" | "cta";
 

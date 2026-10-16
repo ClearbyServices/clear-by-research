@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Pencil, Trash2, X, Plus, ExternalLink, Bold, Italic, Link as LinkIcon } from "lucide-react";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
-
+import { supabase } from "@/lib/supabaseClient"; // Adjust path if your lib folder is elsewhere
 interface AboutSection {
   id?: number;
   section_key: string;

@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { Pencil, Trash2, X, Plus, ExternalLink } from "lucide-react";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+import { Pencil, Trash2, X, Plus, ExternalLink, /* other icons */ } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 type FacultyRecord = {
   id: string;
