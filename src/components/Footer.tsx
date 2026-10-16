@@ -178,7 +178,7 @@ export default async function Footer() {
 
             {/* Service Sub-Column 2: Master's & Research Publication */}
             <div>
-              <h4 className="text-base font-serif mb-4 border-b border-white/20 pb-1.5 text-brand-gold">Master's Services</h4>
+              <h4 className="text-base font-serif mb-4 border-b border-white/20 pb-1.5 text-brand-gold">Master&apos;s Services</h4>
               <ul className="space-y-1.5 text-xs text-gray-300 mb-6">
                 {mastersServices.map((s, i) => (
                   <li key={i}><Link href={`/services/${s.slug}`} className="hover:text-brand-gold transition-colors">{s.sub_menu || s.h1}</Link></li>
@@ -232,7 +232,7 @@ export default async function Footer() {
               rel="noopener noreferrer" 
               className="text-brand-gold hover:underline font-medium"
             >
-              Clear by Services
+              E-Clearby Services
             </a>
           </p>
         </div>

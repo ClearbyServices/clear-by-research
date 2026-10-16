@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Pencil, Trash2, X, Plus, ExternalLink } from "lucide-react";
+import { Pencil, Trash2, X, Plus, ExternalLink, Bold, Italic, Link as LinkIcon } from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -48,7 +48,7 @@ interface FacultyMember {
 export default function AboutTab() {
   const [subTab, setSubTab] = useState<"sections" | "ethics" | "values" | "faculty">("sections");
   
-  // Data States with robust defaults
+  // Data States
   const [sections, setSections] = useState<AboutSection[]>([]);
   const [ethics, setEthics] = useState<EthicsPoint[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
@@ -69,43 +69,61 @@ export default function AboutTab() {
 
   const [showFacultyModal, setShowFacultyModal] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<FacultyMember | null>(null);
-  const [facultyForm, setFacultyForm] = useState<FacultyMember>({ name: "", title: "", experience: "", specs: [""], linkedin_url: "", display_order: 1 });
+  const [facultyForm, setFacultyForm] = useState({ name: "", title: "", experience: "", specsString: "", linkedin_url: "", display_order: 1 });
+
+  const loadAllAboutData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [secRes, ethRes, valRes, facRes] = await Promise.all([
+        supabase.from("about_sections").select("*").order("display_order", { ascending: true }),
+        supabase.from("about_ethics").select("*").order("point_number", { ascending: true }),
+        supabase.from("about_core_values").select("*").order("display_order", { ascending: true }),
+        supabase.from("about_faculty").select("*").order("display_order", { ascending: true })
+      ]);
+
+      if (secRes.data) setSections(secRes.data);
+      if (ethRes.data) setEthics(ethRes.data);
+      if (valRes.data) setValues(valRes.data);
+      if (facRes.data) setFaculty(facRes.data);
+
+      if (ethRes.error) console.error("Error fetching about_ethics:", ethRes.error.message);
+      if (valRes.error) console.error("Error fetching about_core_values:", valRes.error.message);
+    } catch (err) {
+      console.error("Error loading about data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    const timeoutId = window.setTimeout(() => {
+      void loadAllAboutData();
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadAllAboutData]);
 
-    async function loadAllAboutData() {
-      setLoading(true);
-      try {
-        const [secRes, ethRes, valRes, facRes] = await Promise.all([
-          supabase.from("about_sections").select("*").order("display_order", { ascending: true }),
-          supabase.from("about_ethics").select("*").order("point_number", { ascending: true }),
-          supabase.from("about_core_values").select("*").order("display_order", { ascending: true }),
-          supabase.from("about_faculty").select("*").order("display_order", { ascending: true })
-        ]);
+  // --- Rich Text Handlers ---
+  const insertFormatting = <T,>(
+    field: keyof T,
+    formState: T,
+    setFormState: React.Dispatch<React.SetStateAction<T | null>>,
+    tagOpen: string,
+    tagClose: string
+  ) => {
+    const val = String(formState[field] ?? "");
+    setFormState((current) => current ? { ...current, [field]: val + `${tagOpen}text${tagClose}` } : current);
+  };
 
-        if (isMounted) {
-          if (secRes.data) setSections(secRes.data);
-          if (ethRes.data) setEthics(ethRes.data);
-          if (valRes.data) setValues(valRes.data);
-          if (facRes.data) setFaculty(facRes.data);
-
-          if (ethRes.error) console.error("Error fetching about_ethics:", ethRes.error.message);
-          if (valRes.error) console.error("Error fetching about_core_values:", valRes.error.message);
-        }
-      } catch (err) {
-        console.error("Error loading about data:", err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    loadAllAboutData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const insertLink = <T,>(
+    field: keyof T,
+    formState: T,
+    setFormState: React.Dispatch<React.SetStateAction<T | null>>
+  ) => {
+    const url = prompt("Enter hyperlink URL:");
+    if (!url) return;
+    const val = String(formState[field] ?? "");
+    setFormState((current) => current ? { ...current, [field]: val + `<a href="${url}" class="text-indigo-600 underline" target="_blank">link text</a>` } : current);
+  };
 
   // --- SAVE HANDLERS ---
   const handleSaveSection = async (e: React.FormEvent) => {
@@ -120,8 +138,8 @@ export default function AboutTab() {
     }).eq("id", editingSection.id);
 
     if (!error) {
-      setSections(sections.map(s => s.id === editingSection.id ? editingSection : s));
       setShowSectionModal(false);
+      loadAllAboutData();
       alert("Section updated successfully!");
     } else {
       alert(`Error updating section: ${error.message}`);
@@ -133,16 +151,10 @@ export default function AboutTab() {
     const payload = { ...ethicsForm, updated_at: new Date().toISOString() };
     if (editingEthics && editingEthics.id) {
       const { error } = await supabase.from("about_ethics").update(payload).eq("id", editingEthics.id);
-      if (!error) {
-        setEthics(ethics.map(e => e.id === editingEthics.id ? { ...payload, id: editingEthics.id } : e));
-        setShowEthicsModal(false);
-      } else alert(error.message);
+      if (!error) { setShowEthicsModal(false); loadAllAboutData(); } else alert(error.message);
     } else {
-      const { data, error } = await supabase.from("about_ethics").insert([payload]).select();
-      if (!error && data) {
-        setEthics([...ethics, data[0]]);
-        setShowEthicsModal(false);
-      } else alert(error?.message);
+      const { error } = await supabase.from("about_ethics").insert([payload]);
+      if (!error) { setShowEthicsModal(false); loadAllAboutData(); } else alert(error.message);
     }
   };
 
@@ -151,16 +163,10 @@ export default function AboutTab() {
     const payload = { ...valueForm, updated_at: new Date().toISOString() };
     if (editingValue && editingValue.id) {
       const { error } = await supabase.from("about_core_values").update(payload).eq("id", editingValue.id);
-      if (!error) {
-        setValues(values.map(v => v.id === editingValue.id ? { ...payload, id: editingValue.id } : v));
-        setShowValueModal(false);
-      } else alert(error.message);
+      if (!error) { setShowValueModal(false); loadAllAboutData(); } else alert(error.message);
     } else {
-      const { data, error } = await supabase.from("about_core_values").insert([payload]).select();
-      if (!error && data) {
-        setValues([...values, data[0]]);
-        setShowValueModal(false);
-      } else alert(error?.message);
+      const { error } = await supabase.from("about_core_values").insert([payload]);
+      if (!error) { setShowValueModal(false); loadAllAboutData(); } else alert(error.message);
     }
   };
 
@@ -168,9 +174,9 @@ export default function AboutTab() {
     e.preventDefault();
     const payload = { 
       name: facultyForm.name,
-      credentials: facultyForm.title || facultyForm.credentials || "",
+      credentials: facultyForm.title,
       experience: facultyForm.experience,
-      specializations: facultyForm.specs || facultyForm.specializations || [],
+      specializations: facultyForm.specsString.split(',').map(s => s.trim()).filter(Boolean),
       linkedin_url: facultyForm.linkedin_url,
       display_order: facultyForm.display_order || 1,
       updated_at: new Date().toISOString() 
@@ -178,17 +184,10 @@ export default function AboutTab() {
 
     if (editingFaculty && editingFaculty.id) {
       const { error } = await supabase.from("about_faculty").update(payload).eq("id", editingFaculty.id);
-      if (!error) {
-        setFaculty(faculty.map(f => f.id === editingFaculty.id ? { ...payload, id: editingFaculty.id, title: payload.credentials, specs: payload.specializations } as FacultyMember : f));
-        setShowFacultyModal(false);
-      } else alert(error.message);
+      if (!error) { setShowFacultyModal(false); loadAllAboutData(); } else alert(error.message);
     } else {
-      const { data, error } = await supabase.from("about_faculty").insert([payload]).select();
-      if (!error && data) {
-        const newMember = { ...data[0], title: data[0].credentials, specs: data[0].specializations };
-        setFaculty([...faculty, newMember as FacultyMember]);
-        setShowFacultyModal(false);
-      } else alert(error?.message);
+      const { error } = await supabase.from("about_faculty").insert([payload]);
+      if (!error) { setShowFacultyModal(false); loadAllAboutData(); } else alert(error.message);
     }
   };
 
@@ -272,12 +271,12 @@ export default function AboutTab() {
                     <p className="text-xs text-slate-500 mt-1">{item.description}</p>
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingEthics(item); setEthicsForm(item); setShowEthicsModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingEthics(item); setEthicsForm(item as EthicsPoint); setShowEthicsModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button
                       onClick={async () => {
                         if (window.confirm(`Delete ethics point "${item.title}"?`)) {
                           await supabase.from("about_ethics").delete().eq("id", item.id);
-                          setEthics((current) => current.filter((e) => e.id !== item.id));
+                          loadAllAboutData();
                         }
                       }}
                       className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
@@ -317,12 +316,12 @@ export default function AboutTab() {
                     <p className="text-xs text-slate-500 mt-1">{val.description}</p>
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingValue(val); setValueForm(val); setShowValueModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingValue(val); setValueForm(val as CoreValue); setShowValueModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button
                       onClick={async () => {
                         if (window.confirm(`Delete value "${val.title}"?`)) {
                           await supabase.from("about_core_values").delete().eq("id", val.id);
-                          setValues((current) => current.filter((v) => v.id !== val.id));
+                          loadAllAboutData();
                         }
                       }}
                       className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
@@ -339,7 +338,7 @@ export default function AboutTab() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
             <h3 className="font-bold text-slate-800 text-sm">Faculty Team & LinkedIn Profiles</h3>
-            <button onClick={() => { setEditingFaculty(null); setFacultyForm({ name: "", title: "", experience: "", specs: [""], linkedin_url: "", display_order: faculty.length + 1 }); setShowFacultyModal(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+            <button onClick={() => { setEditingFaculty(null); setFacultyForm({ name: "", title: "", experience: "", specsString: "", linkedin_url: "", display_order: faculty.length + 1 }); setShowFacultyModal(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
               <Plus className="w-3.5 h-3.5" /> Add Faculty Member
             </button>
           </div>
@@ -359,19 +358,31 @@ export default function AboutTab() {
                   <td className="p-5">
                     <p className="font-bold text-slate-900 text-sm">{member.name}</p>
                     <p className="text-xs text-indigo-600 font-semibold mt-0.5">{member.credentials || member.title}</p>
+                    <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide">{(member.specializations || member.specs)?.join(', ')}</p>
                   </td>
                   <td className="p-5 text-xs text-slate-600 font-medium max-w-xs truncate">
                     {member.linkedin_url ? <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-1">{member.linkedin_url} <ExternalLink className="w-3 h-3" /></a> : <span className="text-slate-400">Not specified</span>}
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingFaculty(member); setFacultyForm({ name: member.name, title: member.credentials || member.title || "", experience: member.experience, specs: member.specializations || member.specs || [""], linkedin_url: member.linkedin_url || "", display_order: member.display_order || 1 }); setShowFacultyModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { 
+                      setEditingFaculty(member); 
+                      setFacultyForm({ 
+                        name: member.name, 
+                        title: member.credentials || member.title || "", 
+                        experience: member.experience, 
+                        specsString: (member.specializations || member.specs)?.join(', ') || "", 
+                        linkedin_url: member.linkedin_url || "", 
+                        display_order: member.display_order || 1 
+                      }); 
+                      setShowFacultyModal(true); 
+                    }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button onClick={async () => {
                       if (window.confirm(`Delete faculty member "${member.name}"?`)) {
                         await supabase.from("about_faculty").delete().eq("id", member.id);
-                        setFaculty(faculty.filter(f => f.id !== member.id));
+                        loadAllAboutData();
                       }
                     }}
-                     className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -380,6 +391,7 @@ export default function AboutTab() {
         </div>
       )}
 
+      {/* --- MODALS --- */}
       {/* SECTION MODAL */}
       {showSectionModal && editingSection && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
@@ -402,8 +414,15 @@ export default function AboutTab() {
                 <input value={editingSection.subtitle || ""} onChange={e => setEditingSection({...editingSection, subtitle: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Body HTML</label>
-                <textarea rows={6} value={editingSection.body_html || ""} onChange={e => setEditingSection({...editingSection, body_html: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold uppercase text-slate-400">Body Content (HTML)</label>
+                  <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                    <button type="button" onClick={() => insertFormatting("body_html", editingSection, setEditingSection, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                    <button type="button" onClick={() => insertFormatting("body_html", editingSection, setEditingSection, "<em>", "</em>")} title="Italic" className="p-1.5 hover:bg-white rounded"><Italic className="w-3.5 h-3.5 text-slate-600"/></button>
+                    <button type="button" onClick={() => insertLink("body_html", editingSection, setEditingSection)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                  </div>
+                </div>
+                <textarea rows={6} value={editingSection.body_html || ""} onChange={e => setEditingSection({...editingSection, body_html: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
@@ -417,7 +436,7 @@ export default function AboutTab() {
       {/* ETHICS MODAL */}
       {showEthicsModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
-          <form onSubmit={handleSaveEthics} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col">
+          <form onSubmit={handleSaveEthics} className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900">{editingEthics ? "Edit Ethics Point" : "Add Ethics Point"}</h2>
               <button type="button" onClick={() => setShowEthicsModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5"/></button>
@@ -502,8 +521,12 @@ export default function AboutTab() {
                 </div>
               </div>
               <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Specializations (Comma separated)</label>
+                <input required value={facultyForm.specsString} onChange={e => setFacultyForm({...facultyForm, specsString: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" placeholder="e.g. Data Science, AI, Machine Learning" />
+              </div>
+              <div>
                 <label className="block text-xs font-bold uppercase text-slate-400 mb-1">LinkedIn Profile URL</label>
-                <input required type="url" value={facultyForm.linkedin_url || ""} onChange={e => setFacultyForm({...facultyForm, linkedin_url: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <input type="url" value={facultyForm.linkedin_url || ""} onChange={e => setFacultyForm({...facultyForm, linkedin_url: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
