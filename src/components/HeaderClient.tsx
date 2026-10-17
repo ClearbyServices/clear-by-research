@@ -46,6 +46,16 @@ export default function HeaderClient({
 
   const isActive = (path: string) => pathname === path;
 
+  // Helper function to keep dropdown classes clean and apply the gold stroke hover effect
+  const getDropdownItemClass = (slug: string) => {
+    const isItemActive = pathname === `/services/${slug}`;
+    return `block text-sm transition-all duration-200 leading-snug py-1.5 px-3 rounded-lg border ${
+      isItemActive 
+        ? "text-brand-purple font-bold bg-brand-purple/5 border-brand-gold" 
+        : "text-gray-600 hover:text-brand-purple hover:bg-slate-50 border-transparent hover:border-brand-gold"
+    }`;
+  };
+
   return (
     <header className="w-full bg-brand-light border-b border-gray-200/80 sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -95,45 +105,45 @@ export default function HeaderClient({
               </Link>
               
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-[820px] bg-white border border-slate-200/80 shadow-2xl rounded-2xl p-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 grid grid-cols-4 gap-8 z-50">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">
                     <Sparkles className="w-3.5 h-3.5" /> Research Planning
                   </div>
                   {researchPlanning?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">
                     <Sparkles className="w-3.5 h-3.5" /> Development
                   </div>
                   {researchDevelopment?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">
                     <Sparkles className="w-3.5 h-3.5" /> Execution
                   </div>
                   {researchExecution?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">
                     <Sparkles className="w-3.5 h-3.5" /> Thesis
                   </div>
                   {thesisCat?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
@@ -151,7 +161,7 @@ export default function HeaderClient({
               <div className="absolute top-full left-1/2 -translate-x-1/2 w-[600px] bg-white border border-slate-200/80 shadow-2xl rounded-2xl p-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 grid grid-cols-2 gap-4 z-50">
                 {mastersServices?.length > 0 ? (
                   mastersServices.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-2 px-3 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))
@@ -169,37 +179,37 @@ export default function HeaderClient({
               </Link>
               
               <div className="absolute top-full right-0 w-[940px] bg-white border border-slate-200/80 shadow-2xl rounded-2xl p-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 grid grid-cols-4 gap-8 z-50">
-                <div className="flex flex-col space-y-3">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">Research Paper</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">Research Paper</span>
                   {researchPaper?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">Data Analysis</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">Data Analysis</span>
                   {dataAnalysis?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">Implementation</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">Implementation</span>
                   {implementation?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
                 </div>
 
-                <div className="flex flex-col space-y-3">
-                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100">Academic Support</span>
+                <div className="flex flex-col space-y-2">
+                  <span className="text-xs font-bold text-brand-gold uppercase tracking-wider pb-2 border-b border-slate-100 mb-1">Academic Support</span>
                   {academicSupport?.map((s) => (
-                    <Link key={s.slug} href={`/services/${s.slug}`} className={`text-sm transition-all leading-snug py-1 px-2 rounded-lg ${pathname === `/services/${s.slug}` ? "text-brand-purple font-bold bg-brand-purple/5" : "text-gray-600 hover:text-brand-purple hover:bg-slate-50"}`}>
+                    <Link key={s.slug} href={`/services/${s.slug}`} className={getDropdownItemClass(s.slug)}>
                       {s.sub_menu || s.h1}
                     </Link>
                   ))}
@@ -262,7 +272,7 @@ export default function HeaderClient({
             About
           </Link>
 
-          {/* Mobile PhD Accordion with simultaneous routing */}
+          {/* Mobile PhD Accordion */}
           <div>
             <div className="w-full flex justify-between items-center text-base font-semibold text-gray-800 py-1.5">
               <Link 
@@ -318,7 +328,7 @@ export default function HeaderClient({
             )}
           </div>
 
-          {/* Mobile Master's Accordion with simultaneous routing */}
+          {/* Mobile Master's Accordion */}
           <div>
             <div className="w-full flex justify-between items-center text-base font-semibold text-gray-800 py-1.5">
               <Link 
@@ -347,7 +357,7 @@ export default function HeaderClient({
             )}
           </div>
 
-          {/* Mobile Other Services Accordion with simultaneous routing */}
+          {/* Mobile Other Services Accordion */}
           <div>
             <div className="w-full flex justify-between items-center text-base font-semibold text-gray-800 py-1.5">
               <Link 

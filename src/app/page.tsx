@@ -208,10 +208,34 @@ export default function HomePage() {
             <span className="text-brand-gold text-xs font-bold tracking-widest mb-4 block">
               | {hero.badge}
             </span>
-            <h1 className="text-3xl md:text-xl lg:text-5xl font-serif font-bold leading-tight mb-6">
-              {hero.title}
+            
+            {/* WCAG Compliant Typewriter Effect */}
+            <h1 
+              className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight mb-6"
+              aria-label={hero.title} // Screen readers read the full title here
+            >
+              <motion.span 
+                aria-hidden="true" // Hides the chopped-up letters from screen readers
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.02 } } }}
+              >
+                {hero.title?.split("").map((char, index) => (
+                  <motion.span 
+                    key={index} 
+                    variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </motion.span>
             </h1>
-            <div dangerouslySetInnerHTML={{ __html: hero.description }} className="text-gray-300 text-base md:text-lg mb-8 leading-relaxed max-w-2xl prose prose-invert" />
+
+            {/* Slightly Smaller Description */}
+            <div 
+              dangerouslySetInnerHTML={{ __html: hero.description }} 
+              className="text-gray-300 text-sm md:text-base mb-8 leading-relaxed max-w-2xl prose prose-invert" 
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 text-xs md:text-sm text-brand-gold mb-10 font-medium">
               <div className="flex items-center gap-2">✓ END-TO-END PhD GUIDANCE</div>
@@ -222,22 +246,20 @@ export default function HomePage() {
               <div className="flex items-center gap-2">✓ CONFIDENTIAL & PROFESSIONAL SERVICE</div>
             </div>
 
-            <div className="flex flex-wrap gap-4 items-center mb-6">
-              <motion.a 
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+            {/* Cleaned up Extra Code (Standard CSS hover instead of Framer Motion for buttons) */}
+            <div className="flex flex-wrap gap-4 items-center">
+              <a 
                 href={hero.cta_link || "/contact"} 
-                target="_blank" 
-                rel="noopener noreferrer" 
                 className="bg-brand-purple border border-white/30 text-white font-bold py-3.5 px-8 rounded-sm hover:bg-white/10 transition shadow-lg text-sm"
               >
                 {hero.cta_text}
-              </motion.a>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                <a href={hero.secondary_cta_link || "/services"} className="inline-block bg-white text-brand-purple border border-white font-bold py-3.5 px-8 rounded-sm hover:bg-gray-100 transition shadow-lg text-sm">
-                  {hero.secondary_cta_text}
-                </a>
-              </motion.div>
+              </a>
+              <a 
+                href={hero.secondary_cta_link || "/services"} 
+                className="inline-block bg-white text-brand-purple border border-white font-bold py-3.5 px-8 rounded-sm hover:bg-gray-100 transition shadow-lg text-sm"
+              >
+                {hero.secondary_cta_text}
+              </a>
             </div>
           </motion.div>
 
@@ -495,35 +517,35 @@ export default function HomePage() {
       </section>
 
       {/* 10. FREQUENTLY ASKED QUESTIONS */}
-      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-serif font-bold text-brand-purple text-center mb-12">Frequently Asked Questions</h2>
-          <div className="space-y-4">
-            {faqs.map((faq, idx) => (
-              <div key={faq.id || idx} className="border border-gray-200 rounded-sm bg-brand-light overflow-hidden transition-all">
-                <button onClick={() => toggleFaq(idx)} className="w-full px-6 py-4 text-left font-serif font-bold text-brand-purple flex justify-between items-center text-sm">
-                  <span>{faq.question}</span>
-                  <span className="text-brand-gold">{openFaq === idx ? "▲" : "▼"}</span>
-                </button>
-                {openFaq === idx && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="px-6 pb-4 text-xs text-gray-600 leading-relaxed border-t border-gray-200 pt-3"
-                  >
-                    <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
-                  </motion.div>
-                )}
-              </div>
-            ))}
+        <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-serif font-bold text-brand-purple text-center mb-12">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              {faqs.map((faq, idx) => (
+                <div key={faq.id || idx} className="border border-gray-200 rounded-sm bg-brand-light overflow-hidden transition-all">
+                  <button onClick={() => toggleFaq(idx)} className="w-full px-6 py-4 text-left font-serif font-bold text-brand-purple flex justify-between items-center text-sm">
+                    <span>{faq.question}</span>
+                    <span className="text-brand-gold">{openFaq === idx ? "▲" : "▼"}</span>
+                  </button>
+                  {openFaq === idx && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="px-6 pb-4 text-xs text-gray-600 leading-relaxed border-t border-gray-200 pt-3"
+                    >
+                      <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* BLOG CAROUSEL */}
       <BlogCarousel />
 
-      {/* 11. FINAL BOTTOM CTA BANNER WITH LAMP EFFECT */}
+     {/* 11. FINAL BOTTOM CTA BANNER WITH LAMP EFFECT */}
       <LampContainer>
         <motion.div 
           initial={{ opacity: 0.5, y: 100 }}
