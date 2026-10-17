@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import ContactForm from "@/components/ContactForm";
 import FaqAccordion from "@/components/FaqAccordion";
 import type { Metadata } from "next";
+import BlogCarousel from "@/components/BlogCarousel";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -287,6 +288,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </a>
         </div>
       </section>
+
+      {/* BLOG CAROUSEL */}
+            <BlogCarousel />
+            
     </div>
   );
 }

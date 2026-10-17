@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import ContactForm from "@/components/ContactForm";
 import { LampContainer } from "@/components/ui/lamp";
 import { supabase } from "@/lib/supabaseClient";
+import BlogCarousel from "@/components/BlogCarousel"; // <-- Imported the new Blog Carousel
 
 interface HeroContent {
   badge: string;
@@ -518,6 +519,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* BLOG CAROUSEL */}
+      <BlogCarousel />
 
       {/* 11. FINAL BOTTOM CTA BANNER WITH LAMP EFFECT */}
       <LampContainer>
