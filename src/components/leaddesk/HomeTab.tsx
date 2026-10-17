@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient"; // Adjust path if your lib folder is elsewhere
+import { supabase } from "@/lib/supabaseClient";
 
 type SubTabType = "hero" | "stats" | "services" | "why" | "process" | "faqs" | "about_preview" | "ethics" | "faculty" | "disciplines" | "cta";
 
@@ -26,59 +26,50 @@ export default function HomeTab() {
 
   const [loading, setLoading] = useState(true);
 
-  // --- Modals & Forms (Fixed TypeScript any types) ---
+  // --- Modals & Forms ---
   const [showHeroModal, setShowHeroModal] = useState(false);
-  
   const [showStatModal, setShowStatModal] = useState(false);
   const [editingStat, setEditingStat] = useState<(typeof stats)[number] | null>(null);
   const [statForm, setStatForm] = useState({ metric_number: "", label: "", display_order: 1 });
-
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [editingService, setEditingService] = useState<(typeof services)[number] | null>(null);
   const [serviceForm, setServiceForm] = useState({ title: "", description: "", category: "PhD", badge: "", link_url: "", display_order: 1 });
-
   const [showWhyModal, setShowWhyModal] = useState(false);
   const [editingWhy, setEditingWhy] = useState<(typeof whyChoose)[number] | null>(null);
   const [whyForm, setWhyForm] = useState({ point_text: "", display_order: 1 });
-
   const [showProcessModal, setShowProcessModal] = useState(false);
   const [editingProcess, setEditingProcess] = useState<(typeof processSteps)[number] | null>(null);
   const [processForm, setProcessForm] = useState({ step_number: "", stage_label: "STAGE", title: "", description: "", display_order: 1 });
-
   const [showFaqModal, setShowFaqModal] = useState(false);
   const [editingFaq, setEditingFaq] = useState<(typeof faqs)[number] | null>(null);
   const [faqForm, setFaqForm] = useState({ question: "", answer: "", display_order: 1 });
-
   const [showAboutModal, setShowAboutModal] = useState(false);
-
   const [showEthicsModal, setShowEthicsModal] = useState(false);
   const [editingEthics, setEditingEthics] = useState<(typeof ethics)[number] | null>(null);
   const [ethicsForm, setEthicsForm] = useState({ point_number: 1, title: "", description: "" });
-
   const [showFacultyModal, setShowFacultyModal] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<(typeof faculty)[number] | null>(null);
   const [facultyForm, setFacultyForm] = useState({ name: "", credentials: "", experience: "", specializations: "", image_url: "", linkedin_url: "", display_order: 1 });
-
   const [showDisciplineModal, setShowDisciplineModal] = useState(false);
   const [editingDiscipline, setEditingDiscipline] = useState<(typeof disciplines)[number] | null>(null);
   const [disciplineForm, setDisciplineForm] = useState({ category_title: "", disciplines_list: "", icon_name: "", display_order: 1 });
-
   const [showCtaModal, setShowCtaModal] = useState(false);
 
   const loadHomeData = async () => {
     try {
-      const hRes = await supabase.from("home_hero").select("*").limit(1).maybeSingle();
-      const sRes = await supabase.from("home_stats").select("*").order("display_order", { ascending: true });
-      const svRes = await supabase.from("home_services").select("*").order("display_order", { ascending: true });
-      const wRes = await supabase.from("home_why_choose").select("*").order("display_order", { ascending: true });
-      const pRes = await supabase.from("home_process").select("*").order("display_order", { ascending: true });
-      const fRes = await supabase.from("home_faqs").select("*").order("display_order", { ascending: true });
-      
-      const apRes = await supabase.from("home_about_preview").select("*").limit(1).maybeSingle();
-      const ethRes = await supabase.from("about_ethics").select("*").order("point_number", { ascending: true });
-      const facRes = await supabase.from("about_faculty").select("*").order("display_order", { ascending: true });
-      const discRes = await supabase.from("home_disciplines").select("*").order("display_order", { ascending: true });
-      const ctaRes = await supabase.from("home_cta").select("*").limit(1).maybeSingle();
+      const [hRes, sRes, svRes, wRes, pRes, fRes, apRes, ethRes, facRes, discRes, ctaRes] = await Promise.all([
+        supabase.from("home_hero").select("*").limit(1).maybeSingle(),
+        supabase.from("home_stats").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_services").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_why_choose").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_process").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_faqs").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_about_preview").select("*").limit(1).maybeSingle(),
+        supabase.from("about_ethics").select("*").order("point_number", { ascending: true }),
+        supabase.from("about_faculty").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_disciplines").select("*").order("display_order", { ascending: true }),
+        supabase.from("home_cta").select("*").limit(1).maybeSingle()
+      ]);
 
       if (hRes.data) setHero(hRes.data);
       if (sRes.data) setStats(sRes.data);
@@ -102,19 +93,27 @@ export default function HomeTab() {
     const timeoutId = window.setTimeout(() => {
       void loadHomeData();
     }, 0);
-
     return () => window.clearTimeout(timeoutId);
   }, []);
 
-const insertFormatting = <T extends Record<string, unknown>>(
+  const insertFormatting = <T extends Record<string, unknown>>(
     field: keyof T,
     formState: T,
     setFormState: React.Dispatch<React.SetStateAction<T>>,
     tagOpen: string,
     tagClose: string
   ) => {
-    const val = String(formState[field] ?? "");
-    setFormState((current) => ({ ...current, [field]: val + `${tagOpen}text${tagClose}` }) as T);
+    const currentVal = String(formState[field] ?? "");
+    const textToFormat = prompt("What words do you want to format?\n(Type them exactly as they appear in the box)");
+    if (!textToFormat) return;
+
+    const formattedHtml = `${tagOpen}${textToFormat}${tagClose}`;
+
+    if (currentVal.includes(textToFormat)) {
+      setFormState((current) => ({ ...current, [field]: currentVal.replace(textToFormat, formattedHtml) }) as T);
+    } else {
+      setFormState((current) => ({ ...current, [field]: currentVal + (currentVal ? " " : "") + formattedHtml }) as T);
+    }
   };
 
   const insertLink = <T extends Record<string, unknown>>(
@@ -122,10 +121,20 @@ const insertFormatting = <T extends Record<string, unknown>>(
     formState: T,
     setFormState: React.Dispatch<React.SetStateAction<T>>
   ) => {
-    const url = prompt("Enter hyperlink URL (e.g. /services or https://...):");
+    const currentVal = String(formState[field] ?? "");
+    const textToLink = prompt("Step 1: What words do you want to make clickable?\n(Type them exactly as they appear in the box)");
+    if (!textToLink) return;
+
+    const url = prompt(`Step 2: Where should "${textToLink}" link to?\n(e.g., /services or https://...)`);
     if (!url) return;
-    const val = String(formState[field] ?? "");
-    setFormState((current) => ({ ...current, [field]: val + `<a href="${url}" class="text-indigo-600 underline" target="_blank">link text</a>` }) as T);
+
+    const linkHtml = `<a href="${url}" class="text-brand-purple font-bold underline hover:text-brand-gold transition-colors">${textToLink}</a>`;
+
+    if (currentVal.includes(textToLink)) {
+      setFormState((current) => ({ ...current, [field]: currentVal.replace(textToLink, linkHtml) }) as T);
+    } else {
+      setFormState((current) => ({ ...current, [field]: currentVal + (currentVal ? " " : "") + linkHtml }) as T);
+    }
   };
 
   // --- Save Handlers ---
@@ -197,7 +206,8 @@ const insertFormatting = <T extends Record<string, unknown>>(
       const res = await supabase.from("home_about_preview").update({ ...aboutPreview, updated_at: new Date().toISOString() }).eq("id", aboutPreview.id);
       error = res.error;
     } else {
-      const res = await supabase.from("home_about_preview").insert([aboutPreview]);
+      const { id, ...insertPayload } = aboutPreview; // Removed empty ID to prevent Postgres errors
+      const res = await supabase.from("home_about_preview").insert([insertPayload]);
       error = res.error;
     }
     if (!error) { alert("About Preview updated!"); setShowAboutModal(false); loadHomeData(); } else { alert(error.message); }
@@ -251,7 +261,8 @@ const insertFormatting = <T extends Record<string, unknown>>(
       const res = await supabase.from("home_cta").update({ ...cta, updated_at: new Date().toISOString() }).eq("id", cta.id);
       error = res.error;
     } else {
-      const res = await supabase.from("home_cta").insert([cta]);
+      const { id, ...insertPayload } = cta; // Removed empty ID to prevent Postgres errors
+      const res = await supabase.from("home_cta").insert([insertPayload]);
       error = res.error;
     }
     if (!error) { alert("CTA Banner updated!"); setShowCtaModal(false); loadHomeData(); } else { alert(error.message); }
@@ -259,6 +270,7 @@ const insertFormatting = <T extends Record<string, unknown>>(
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Tab Navigation */}
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Home Page</h2>
@@ -349,7 +361,7 @@ const insertFormatting = <T extends Record<string, unknown>>(
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {/* STATS RENDER */}
+              {/* TABLES RENDER MAPS... */}
               {subTab === "stats" && stats.map((st) => (
                 <tr key={st.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{st.display_order}</td>
@@ -360,8 +372,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-              
-              {/* SERVICES RENDER */}
               {subTab === "services" && services.map((sv) => (
                 <tr key={sv.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{sv.display_order}</td>
@@ -372,8 +382,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* WHY RENDER */}
               {subTab === "why" && whyChoose.map((w) => (
                 <tr key={w.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{w.display_order}</td>
@@ -384,8 +392,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* PROCESS RENDER */}
               {subTab === "process" && processSteps.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-extrabold text-indigo-600 text-lg">{p.step_number}</td>
@@ -396,8 +402,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* FAQS RENDER */}
               {subTab === "faqs" && faqs.map((f) => (
                 <tr key={f.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{f.display_order}</td>
@@ -408,8 +412,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* ETHICS RENDER */}
               {subTab === "ethics" && ethics.map((eth) => (
                 <tr key={eth.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{eth.point_number}</td>
@@ -420,8 +422,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* FACULTY RENDER */}
               {subTab === "faculty" && faculty.map((fac) => (
                 <tr key={fac.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{fac.display_order}</td>
@@ -432,8 +432,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
-              {/* DISCIPLINES RENDER */}
               {subTab === "disciplines" && disciplines.map((disc) => (
                 <tr key={disc.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-400">{disc.display_order}</td>
@@ -444,14 +442,12 @@ const insertFormatting = <T extends Record<string, unknown>>(
                   </td>
                 </tr>
               ))}
-
             </tbody>
           </table>
         </div>
       )}
 
       {/* --- ALL MODALS --- */}
-      {/* HERO EDIT MODAL */}
       {showHeroModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveHero} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col p-8 space-y-4">
@@ -463,8 +459,16 @@ const insertFormatting = <T extends Record<string, unknown>>(
               <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Badge</label>
               <input value={hero.badge || ""} onChange={e => setHero({...hero, badge: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
             </div>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title (HTML)</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", hero, setHero, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertFormatting("title", hero, setHero, "<em>", "</em>")} title="Italic" className="p-1.5 hover:bg-white rounded"><Italic className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", hero, setHero)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
               <textarea rows={2} value={hero.title || ""} onChange={e => setHero({...hero, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
             </div>
             <div>
@@ -498,7 +502,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* STAT MODAL */}
       {showStatModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveStat} className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-8 space-y-4">
@@ -523,14 +526,20 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* SERVICE MODAL */}
       {showServiceModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveService} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
             <h3 className="text-lg font-bold text-slate-900">{editingService ? "Edit Service" : "Add Service"}</h3>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-              <input required value={serviceForm.title} onChange={e => setServiceForm({...serviceForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", serviceForm, setServiceForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", serviceForm, setServiceForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <input required value={serviceForm.title} onChange={e => setServiceForm({...serviceForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -560,7 +569,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* WHY MODAL */}
       {showWhyModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveWhy} className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-8 space-y-4">
@@ -587,7 +595,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* PROCESS MODAL */}
       {showProcessModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveProcess} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
@@ -602,9 +609,16 @@ const insertFormatting = <T extends Record<string, unknown>>(
                 <input type="number" required value={processForm.display_order} onChange={e => setProcessForm({...processForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-              <input required value={processForm.title} onChange={e => setProcessForm({...processForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", processForm, setProcessForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", processForm, setProcessForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <input required value={processForm.title} onChange={e => setProcessForm({...processForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -624,7 +638,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* FAQ MODAL */}
       {showFaqModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveFaq} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
@@ -655,20 +668,27 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* ABOUT PREVIEW MODAL */}
       {showAboutModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveAboutPreview} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col p-8 space-y-4">
             <h3 className="text-lg font-bold text-slate-900">Edit About Preview</h3>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-              <input required value={aboutPreview.title || ""} onChange={e => setAboutPreview({...aboutPreview, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", aboutPreview, setAboutPreview, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", aboutPreview, setAboutPreview)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <input required value={aboutPreview.title || ""} onChange={e => setAboutPreview({...aboutPreview, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="block text-xs font-bold uppercase text-slate-400">Body Content (HTML)</label>
                 <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
                   <button type="button" onClick={() => insertFormatting("body_html", aboutPreview, setAboutPreview, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("body_html", aboutPreview, setAboutPreview)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
                 </div>
               </div>
               <textarea rows={6} required value={aboutPreview.body_html || ""} onChange={e => setAboutPreview({...aboutPreview, body_html: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
@@ -681,7 +701,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* ETHICS MODAL */}
       {showEthicsModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveEthics} className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-8 space-y-4">
@@ -690,12 +709,25 @@ const insertFormatting = <T extends Record<string, unknown>>(
               <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Point Number</label>
               <input type="number" required value={ethicsForm.point_number} onChange={e => setEthicsForm({...ethicsForm, point_number: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
             </div>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-              <input required value={ethicsForm.title} onChange={e => setEthicsForm({...ethicsForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", ethicsForm, setEthicsForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", ethicsForm, setEthicsForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <input required value={ethicsForm.title} onChange={e => setEthicsForm({...ethicsForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Description</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Description</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("description", ethicsForm, setEthicsForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("description", ethicsForm, setEthicsForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
               <textarea rows={4} required value={ethicsForm.description} onChange={e => setEthicsForm({...ethicsForm, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div className="flex justify-end gap-3 pt-4">
@@ -706,7 +738,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* FACULTY MODAL */}
       {showFacultyModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveFaculty} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
@@ -741,7 +772,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* DISCIPLINE MODAL */}
       {showDisciplineModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveDiscipline} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
@@ -766,7 +796,6 @@ const insertFormatting = <T extends Record<string, unknown>>(
         </div>
       )}
 
-      {/* CTA MODAL */}
       {showCtaModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
           <form onSubmit={handleSaveCta} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col p-8 space-y-4">
@@ -775,13 +804,26 @@ const insertFormatting = <T extends Record<string, unknown>>(
               <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Badge Text</label>
               <input value={cta.badge_text || ""} onChange={e => setCta({...cta, badge_text: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
             </div>
+            {/* Toolbar Added to Title */}
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-              <input required value={cta.title || ""} onChange={e => setCta({...cta, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Title</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("title", cta, setCta, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("title", cta, setCta)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <input required value={cta.title || ""} onChange={e => setCta({...cta, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Description</label>
-              <textarea rows={3} required value={cta.description || ""} onChange={e => setCta({...cta, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-bold uppercase text-slate-400">Description</label>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button type="button" onClick={() => insertFormatting("description", cta, setCta, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
+                  <button type="button" onClick={() => insertLink("description", cta, setCta)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+                </div>
+              </div>
+              <textarea rows={3} required value={cta.description || ""} onChange={e => setCta({...cta, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
