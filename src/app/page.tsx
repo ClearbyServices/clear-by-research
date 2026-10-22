@@ -484,35 +484,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. ACADEMIC SUBJECTS */}
-      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light">
-        <div className="max-w-7xl mx-auto mb-16 flex flex-col items-center text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-4">
-            PhD Research Guidance Across Academic Disciplines
-          </h2>
-          <div className="w-24 h-0.5 bg-brand-gold mx-auto mb-6"></div>
-          <p className="text-gray-600 text-sm md:text-base max-w-4xl mx-auto leading-relaxed">
-            We provide ethical research guidance, consultation, and academic support to doctoral scholars and researchers across a wide range of disciplines—from business and engineering to health sciences, social sciences, life sciences, humanities, and technology.
+      {/* 7. ELITE RESEARCH FACULTY (WITH CLICKABLE LINKEDIN CARDS) */}
+      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light border-t border-gray-200">
+        <div className="max-w-7xl mx-auto text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-3">Elite Research Faculty</h2>
+          <div className="w-20 h-0.5 bg-brand-gold mx-auto mb-4"></div>
+          <p className="text-gray-600 text-xs md:text-sm max-w-2xl mx-auto">
+            Our consultants are not just advisors; they are seasoned researchers, peer-reviewers, and academic pioneers with decades of cumulative experience in the ivory tower.
           </p>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
-          {disciplines.map((col, idx) => (
-            <div key={col.id || idx}>
-              <h4 className="font-serif font-bold text-brand-purple mb-4 uppercase tracking-wider text-sm md:text-base">
-                {col.category_title}
-              </h4>
-              <ul className="space-y-3 text-gray-700 text-sm">
-                {Array.isArray(col.disciplines_list) && col.disciplines_list.map((item: string, i: number) => (
-                  <li key={i} className="hover:text-brand-purple transition-colors">· {item}</li>
-                ))}
-              </ul>
-            </div>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          {facultyList.map((fac, idx) => (
+            <a 
+              key={fac.id || idx} 
+              href={fac.linkedin_url || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-white p-8 border border-gray-200 rounded-sm text-center shadow-sm hover:border-brand-gold hover:shadow-xl hover:-translate-y-1 transition-all duration-300 block cursor-pointer group"
+            >
+              <div className="w-20 h-20 bg-brand-light border border-brand-gold/30 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-sm">
+                <Image 
+                  src="/Faculty.png" 
+                  alt="Faculty" 
+                  width={80} 
+                  height={80} 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-brand-purple mb-1 group-hover:text-brand-gold transition-colors">{fac.name}</h3>
+              <p className="text-xs text-brand-gold font-bold mb-3">{fac.credentials || fac.title}</p>
+              <p className="text-xs text-gray-500 mb-6 font-medium">{fac.experience}</p>
+              
+              <div className="border-t border-gray-200 pt-4 text-left">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Credentials:</p>
+                <p className="text-xs text-gray-700 mb-3 font-medium">{fac.credentials || fac.title}</p>
+                
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Specializations:</p>
+                <ul className="space-y-1 text-xs text-gray-700">
+                  {Array.isArray(fac.specializations) && fac.specializations.map((s: string, i: number) => <li key={i}>✓ {s}</li>)}
+                </ul>
+              </div>
+            </a>
           ))}
-        </div>
-
-        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-gray-200 text-sm italic text-gray-600 text-center">
-          Can&apos;t find your discipline? We work across 40+ academic fields. <a href="/contact" className="text-brand-gold font-semibold not-italic hover:underline">Contact us</a> to discuss your specialized area.
         </div>
       </section>
 
