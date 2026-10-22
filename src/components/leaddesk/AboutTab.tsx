@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2, X, Plus, ExternalLink, Bold, Italic, Link as LinkIcon } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient"; // Adjust path if your lib folder is elsewhere
+import { supabase } from "@/lib/supabaseClient";
+
 interface AboutSection {
   id?: number;
   section_key: string;
@@ -190,7 +191,7 @@ export default function AboutTab() {
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage About Page Content</h2>
-          <p className="text-sm text-slate-500 mt-1">Edit all text sections, ethics points, core values, and faculty members.</p>
+          <p className="text-sm text-slate-600 mt-1">Edit all text sections, ethics points, core values, and faculty members.</p>
         </div>
         <div className="flex gap-1 bg-slate-100 p-1.5 rounded-xl flex-wrap">
           <button onClick={() => setSubTab("sections")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${subTab === "sections" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>
@@ -209,12 +210,12 @@ export default function AboutTab() {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 font-medium bg-white rounded-2xl border border-slate-200">Loading About content...</div>
+        <div className="p-12 text-center text-slate-600 font-medium bg-white rounded-2xl border border-slate-200">Loading About content...</div>
       ) : subTab === "sections" ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr className="bg-slate-50/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                 <th className="p-5 w-20 text-center">Order</th>
                 <th className="p-5">Section Key & Title</th>
                 <th className="p-5">Content Preview</th>
@@ -224,14 +225,14 @@ export default function AboutTab() {
             <tbody className="divide-y divide-slate-100">
               {sections.map((sec) => (
                 <tr key={sec.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-5 text-center font-bold text-slate-400">{sec.display_order}</td>
+                  <td className="p-5 text-center font-bold text-slate-600">{sec.display_order}</td>
                   <td className="p-5">
                     <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md block w-fit mb-1">{sec.section_key}</span>
                     <p className="font-bold text-slate-900 text-sm">{sec.title || "No Title"}</p>
                   </td>
-                  <td className="p-5 text-xs text-slate-500 max-w-md truncate">{sec.body_html || sec.subtitle || "No preview"}</td>
+                  <td className="p-5 text-xs text-slate-600 max-w-md truncate">{sec.body_html || sec.subtitle || "No preview"}</td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingSection(sec); setShowSectionModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingSection(sec); setShowSectionModal(true); }} aria-label={`Edit section ${sec.section_key}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -248,7 +249,7 @@ export default function AboutTab() {
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr className="bg-slate-50/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                 <th className="p-5 w-20 text-center">No.</th>
                 <th className="p-5">Title & Description</th>
                 <th className="p-5 text-right">Actions</th>
@@ -256,16 +257,16 @@ export default function AboutTab() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {ethics.length === 0 ? (
-                <tr><td colSpan={3} className="p-8 text-center text-slate-400 text-xs">No ethics points found. Click &ldquo;Add Ethics Point&rdquo; above.</td></tr>
+                <tr><td colSpan={3} className="p-8 text-center text-slate-600 text-xs">No ethics points found. Click &ldquo;Add Ethics Point&rdquo; above.</td></tr>
               ) : ethics.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-5 text-center font-bold text-slate-400">{item.point_number}</td>
+                  <td className="p-5 text-center font-bold text-slate-600">{item.point_number}</td>
                   <td className="p-5">
                     <p className="font-bold text-slate-900 text-sm">{item.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{item.description}</p>
+                    <p className="text-xs text-slate-600 mt-1">{item.description}</p>
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingEthics(item); setEthicsForm(item as EthicsPoint); setShowEthicsModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingEthics(item); setEthicsForm(item as EthicsPoint); setShowEthicsModal(true); }} aria-label={`Edit ethics point ${item.title}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button
                       onClick={async () => {
                         if (window.confirm(`Delete ethics point "${item.title}"?`)) {
@@ -273,7 +274,8 @@ export default function AboutTab() {
                           loadAllAboutData();
                         }
                       }}
-                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
+                      aria-label={`Delete ethics point ${item.title}`}
+                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -293,7 +295,7 @@ export default function AboutTab() {
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr className="bg-slate-50/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                 <th className="p-5 w-20 text-center">Order</th>
                 <th className="p-5">Value Title & Description</th>
                 <th className="p-5 text-right">Actions</th>
@@ -301,16 +303,16 @@ export default function AboutTab() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {values.length === 0 ? (
-                <tr><td colSpan={3} className="p-8 text-center text-slate-400 text-xs">No core values found. Click &ldquo;Add Core Value&rdquo; above.</td></tr>
+                <tr><td colSpan={3} className="p-8 text-center text-slate-600 text-xs">No core values found. Click &ldquo;Add Core Value&rdquo; above.</td></tr>
               ) : values.map((val) => (
                 <tr key={val.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-5 text-center font-bold text-slate-400">{val.display_order}</td>
+                  <td className="p-5 text-center font-bold text-slate-600">{val.display_order}</td>
                   <td className="p-5">
                     <p className="font-bold text-slate-900 text-sm">{val.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{val.description}</p>
+                    <p className="text-xs text-slate-600 mt-1">{val.description}</p>
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingValue(val); setValueForm(val as CoreValue); setShowValueModal(true); }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingValue(val); setValueForm(val as CoreValue); setShowValueModal(true); }} aria-label={`Edit core value ${val.title}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button
                       onClick={async () => {
                         if (window.confirm(`Delete value "${val.title}"?`)) {
@@ -318,7 +320,8 @@ export default function AboutTab() {
                           loadAllAboutData();
                         }
                       }}
-                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
+                      aria-label={`Delete core value ${val.title}`}
+                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -338,7 +341,7 @@ export default function AboutTab() {
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/70 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr className="bg-slate-50/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                 <th className="p-5 w-20 text-center">Order</th>
                 <th className="p-5">Faculty Details</th>
                 <th className="p-5">LinkedIn URL</th>
@@ -348,14 +351,14 @@ export default function AboutTab() {
             <tbody className="divide-y divide-slate-100">
               {faculty.map((member) => (
                 <tr key={member.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-5 text-center font-bold text-slate-400">{member.display_order}</td>
+                  <td className="p-5 text-center font-bold text-slate-600">{member.display_order}</td>
                   <td className="p-5">
                     <p className="font-bold text-slate-900 text-sm">{member.name}</p>
                     <p className="text-xs text-indigo-600 font-semibold mt-0.5">{member.credentials || member.title}</p>
-                    <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide">{(member.specializations || member.specs)?.join(', ')}</p>
+                    <p className="text-[10px] text-slate-600 mt-1 uppercase tracking-wide">{(member.specializations || member.specs)?.join(', ')}</p>
                   </td>
                   <td className="p-5 text-xs text-slate-600 font-medium max-w-xs truncate">
-                    {member.linkedin_url ? <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-1">{member.linkedin_url} <ExternalLink className="w-3 h-3" /></a> : <span className="text-slate-400">Not specified</span>}
+                    {member.linkedin_url ? <a href={member.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-1">{member.linkedin_url} <ExternalLink className="w-3 h-3" /></a> : <span className="text-slate-500">Not specified</span>}
                   </td>
                   <td className="p-5 flex gap-2 justify-end">
                     <button onClick={() => { 
@@ -369,14 +372,15 @@ export default function AboutTab() {
                         display_order: member.display_order || 1 
                       }); 
                       setShowFacultyModal(true); 
-                    }} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
+                    }} aria-label={`Edit faculty member ${member.name}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors cursor-pointer"><Pencil className="w-4 h-4" /></button>
                     <button onClick={async () => {
                       if (window.confirm(`Delete faculty member "${member.name}"?`)) {
                         await supabase.from("about_faculty").delete().eq("id", member.id);
                         loadAllAboutData();
                       }
                     }}
-                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-xl transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                    aria-label={`Delete faculty member ${member.name}`}
+                    className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -392,35 +396,35 @@ export default function AboutTab() {
           <form onSubmit={handleSaveSection} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[92vh] overflow-hidden">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900">Edit Section: <span className="text-indigo-600">{editingSection.section_key}</span></h2>
-              <button type="button" onClick={() => setShowSectionModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5"/></button>
+              <button type="button" onClick={() => setShowSectionModal(false)} aria-label="Close section modal" className="text-slate-500 hover:text-slate-800"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-8 overflow-y-auto space-y-4 flex-1">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Badge Text</label>
-                <input value={editingSection.badge || ""} onChange={e => setEditingSection({...editingSection, badge: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="sec-badge" className="block text-xs font-bold uppercase text-slate-600 mb-1">Badge Text</label>
+                <input id="sec-badge" value={editingSection.badge || ""} onChange={e => setEditingSection({...editingSection, badge: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-                <input value={editingSection.title || ""} onChange={e => setEditingSection({...editingSection, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="sec-title" className="block text-xs font-bold uppercase text-slate-600 mb-1">Title</label>
+                <input id="sec-title" value={editingSection.title || ""} onChange={e => setEditingSection({...editingSection, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Subtitle</label>
-                <input value={editingSection.subtitle || ""} onChange={e => setEditingSection({...editingSection, subtitle: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="sec-subtitle" className="block text-xs font-bold uppercase text-slate-600 mb-1">Subtitle</label>
+                <input id="sec-subtitle" value={editingSection.subtitle || ""} onChange={e => setEditingSection({...editingSection, subtitle: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold uppercase text-slate-400">Body Content (HTML)</label>
+                  <label htmlFor="sec-body" className="block text-xs font-bold uppercase text-slate-600">Body Content (HTML)</label>
                   <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
                     <button type="button" onClick={() => insertFormatting("body_html", editingSection, setEditingSection, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
                     <button type="button" onClick={() => insertFormatting("body_html", editingSection, setEditingSection, "<em>", "</em>")} title="Italic" className="p-1.5 hover:bg-white rounded"><Italic className="w-3.5 h-3.5 text-slate-600"/></button>
                     <button type="button" onClick={() => insertLink("body_html", editingSection, setEditingSection)} title="Hyperlink" className="p-1.5 hover:bg-white rounded"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
                   </div>
                 </div>
-                <textarea rows={6} value={editingSection.body_html || ""} onChange={e => setEditingSection({...editingSection, body_html: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
+                <textarea id="sec-body" rows={6} value={editingSection.body_html || ""} onChange={e => setEditingSection({...editingSection, body_html: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowSectionModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowSectionModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold">Cancel</button>
               <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">Save Section</button>
             </div>
           </form>
@@ -433,24 +437,24 @@ export default function AboutTab() {
           <form onSubmit={handleSaveEthics} className="bg-white rounded-3xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900">{editingEthics ? "Edit Ethics Point" : "Add Ethics Point"}</h2>
-              <button type="button" onClick={() => setShowEthicsModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5"/></button>
+              <button type="button" onClick={() => setShowEthicsModal(false)} aria-label="Close ethics modal" className="text-slate-500 hover:text-slate-800"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Point Number</label>
-                <input type="number" required value={ethicsForm.point_number} onChange={e => setEthicsForm({...ethicsForm, point_number: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="eth-num" className="block text-xs font-bold uppercase text-slate-600 mb-1">Point Number</label>
+                <input id="eth-num" type="number" required value={ethicsForm.point_number} onChange={e => setEthicsForm({...ethicsForm, point_number: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-                <input required value={ethicsForm.title} onChange={e => setEthicsForm({...ethicsForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="eth-title" className="block text-xs font-bold uppercase text-slate-600 mb-1">Title</label>
+                <input id="eth-title" required value={ethicsForm.title} onChange={e => setEthicsForm({...ethicsForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Description</label>
-                <textarea rows={4} required value={ethicsForm.description} onChange={e => setEthicsForm({...ethicsForm, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="eth-desc" className="block text-xs font-bold uppercase text-slate-600 mb-1">Description</label>
+                <textarea id="eth-desc" rows={4} required value={ethicsForm.description} onChange={e => setEthicsForm({...ethicsForm, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowEthicsModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowEthicsModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold">Cancel</button>
               <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">Save Point</button>
             </div>
           </form>
@@ -463,24 +467,24 @@ export default function AboutTab() {
           <form onSubmit={handleSaveValue} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900">{editingValue ? "Edit Core Value" : "Add Core Value"}</h2>
-              <button type="button" onClick={() => setShowValueModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5"/></button>
+              <button type="button" onClick={() => setShowValueModal(false)} aria-label="Close core value modal" className="text-slate-500 hover:text-slate-800"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Title</label>
-                <input required value={valueForm.title} onChange={e => setValueForm({...valueForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="val-title" className="block text-xs font-bold uppercase text-slate-600 mb-1">Title</label>
+                <input id="val-title" required value={valueForm.title} onChange={e => setValueForm({...valueForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Description</label>
-                <textarea rows={3} required value={valueForm.description} onChange={e => setValueForm({...valueForm, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="val-desc" className="block text-xs font-bold uppercase text-slate-600 mb-1">Description</label>
+                <textarea id="val-desc" rows={3} required value={valueForm.description} onChange={e => setValueForm({...valueForm, description: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Display Order</label>
-                <input type="number" required value={valueForm.display_order} onChange={e => setValueForm({...valueForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="val-order" className="block text-xs font-bold uppercase text-slate-600 mb-1">Display Order</label>
+                <input id="val-order" type="number" required value={valueForm.display_order} onChange={e => setValueForm({...valueForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowValueModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowValueModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold">Cancel</button>
               <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">Save Value</button>
             </div>
           </form>
@@ -493,38 +497,38 @@ export default function AboutTab() {
           <form onSubmit={handleSaveFaculty} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50">
               <h2 className="text-lg font-bold text-slate-900">{editingFaculty ? "Edit Faculty Member" : "Add Faculty Member"}</h2>
-              <button type="button" onClick={() => setShowFacultyModal(false)} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5"/></button>
+              <button type="button" onClick={() => setShowFacultyModal(false)} aria-label="Close faculty modal" className="text-slate-500 hover:text-slate-800"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-8 space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Full Name</label>
-                <input required value={facultyForm.name} onChange={e => setFacultyForm({...facultyForm, name: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="fac-name" className="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+                <input id="fac-name" required value={facultyForm.name} onChange={e => setFacultyForm({...facultyForm, name: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Academic Credentials</label>
-                <input required value={facultyForm.title} onChange={e => setFacultyForm({...facultyForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="fac-cred" className="block text-xs font-bold uppercase text-slate-600 mb-1">Academic Credentials</label>
+                <input id="fac-cred" required value={facultyForm.title} onChange={e => setFacultyForm({...facultyForm, title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Experience</label>
-                  <input required value={facultyForm.experience} onChange={e => setFacultyForm({...facultyForm, experience: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                  <label htmlFor="fac-exp" className="block text-xs font-bold uppercase text-slate-600 mb-1">Experience</label>
+                  <input id="fac-exp" required value={facultyForm.experience} onChange={e => setFacultyForm({...facultyForm, experience: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Display Order</label>
-                  <input type="number" required value={facultyForm.display_order} onChange={e => setFacultyForm({...facultyForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                  <label htmlFor="fac-order" className="block text-xs font-bold uppercase text-slate-600 mb-1">Display Order</label>
+                  <input id="fac-order" type="number" required value={facultyForm.display_order} onChange={e => setFacultyForm({...facultyForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Specializations (Comma separated)</label>
-                <input required value={facultyForm.specsString} onChange={e => setFacultyForm({...facultyForm, specsString: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" placeholder="e.g. Data Science, AI, Machine Learning" />
+                <label htmlFor="fac-specs" className="block text-xs font-bold uppercase text-slate-600 mb-1">Specializations (Comma separated)</label>
+                <input id="fac-specs" required value={facultyForm.specsString} onChange={e => setFacultyForm({...facultyForm, specsString: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" placeholder="e.g. Data Science, AI, Machine Learning" />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 mb-1">LinkedIn Profile URL</label>
-                <input type="url" value={facultyForm.linkedin_url || ""} onChange={e => setFacultyForm({...facultyForm, linkedin_url: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+                <label htmlFor="fac-linkedin" className="block text-xs font-bold uppercase text-slate-600 mb-1">LinkedIn Profile URL</label>
+                <input id="fac-linkedin" type="url" value={facultyForm.linkedin_url || ""} onChange={e => setFacultyForm({...facultyForm, linkedin_url: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
             </div>
             <div className="p-6 border-t bg-slate-50 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowFacultyModal(false)} className="px-5 py-2.5 text-sm text-slate-600 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowFacultyModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold">Cancel</button>
               <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">Save Faculty</button>
             </div>
           </form>
