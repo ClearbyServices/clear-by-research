@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import ContactForm from "@/components/ContactForm";
 import { LampContainer } from "@/components/ui/lamp";
 import { supabase } from "@/lib/supabaseClient";
-import BlogCarousel from "@/components/BlogCarousel"; // <-- Imported the new Blog Carousel
+import BlogCarousel from "@/components/BlogCarousel";
 
 interface HeroContent {
   badge: string;
@@ -57,12 +57,13 @@ interface FacultyMember {
   credentials: string;
   experience: string;
   specializations: string[];
+  linkedin_url?: string;
 }
 
 interface DisciplineCategory {
   id?: string | number;
   category_title: string;
-  disciplines_list: string[];
+  disciplines_list: string[] | string; // Updated to support Rich Text HTML strings
 }
 
 interface FaqItem {
@@ -185,7 +186,7 @@ export default function HomePage() {
   const categories = [
     "All",
     "PhD",
-    "Master&apos;s",
+    "Master's",
     "Research & Publication",
     "Data Analysis",
     "Implementation / Simulation",
@@ -198,7 +199,6 @@ export default function HomePage() {
       {/* 1. HERO SECTION */}
       <section className="w-full bg-brand-purple text-white py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -209,13 +209,12 @@ export default function HomePage() {
               | {hero.badge}
             </span>
             
-            {/* WCAG Compliant Typewriter Effect */}
             <h1 
               className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight mb-6"
-              aria-label={hero.title} // Screen readers read the full title here
+              aria-label={hero.title}
             >
               <motion.span 
-                aria-hidden="true" // Hides the chopped-up letters from screen readers
+                aria-hidden="true"
                 initial="hidden"
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.02 } } }}
@@ -231,7 +230,6 @@ export default function HomePage() {
               </motion.span>
             </h1>
 
-            {/* Slightly Smaller Description */}
             <div 
               dangerouslySetInnerHTML={{ __html: hero.description }} 
               className="text-gray-300 text-sm md:text-base mb-8 leading-relaxed max-w-2xl prose prose-invert" 
@@ -246,7 +244,6 @@ export default function HomePage() {
               <div className="flex items-center gap-2">✓ CONFIDENTIAL & PROFESSIONAL SERVICE</div>
             </div>
 
-            {/* Cleaned up Extra Code (Standard CSS hover instead of Framer Motion for buttons) */}
             <div className="flex flex-wrap gap-4 items-center">
               <a 
                 href={hero.cta_link || "/contact"} 
@@ -271,7 +268,6 @@ export default function HomePage() {
           >
             <ContactForm variant="hero" />
           </motion.div>
-
         </div>
       </section>
 
@@ -401,7 +397,7 @@ export default function HomePage() {
             {[
               { title: "1. Academic Integrity is Non-Negotiable:", desc: "All guidance maintains university plagiarism standards. No shortcuts, no academic dishonesty. Your work represents your authentic research." },
               { title: "2. You Maintain Full Authorship:", desc: "You write your thesis; we provide feedback. We never write for you or submit work in your name. Your intellectual contributions remain 100% yours." },
-              { title: "3. Our Role is Advisory Only:", desc: "We guide your thinking, not replace it. We coach you to do better work, not do it for you. We&apos;re like having an expert mentor, not a co-author." },
+              { title: "3. Our Role is Advisory Only:", desc: "We guide your thinking, not replace it. We coach you to do better work, not do it for you. We're like having an expert mentor, not a co-author." },
               { title: "4. Transparent Process:", desc: "Clear expectations from day one. What we will and won't do, spelled out. Regular check-ins to ensure alignment with your goals." },
               { title: "5. University Compliance:", desc: "We follow all university guidelines. Our services don't violate academic policies. We prepare students for legitimate academic success." }
             ].map((promise, i) => (
@@ -446,46 +442,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. ELITE RESEARCH FACULTY */}
-      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-3">Elite Research Faculty</h2>
-          <div className="w-20 h-0.5 bg-brand-gold mx-auto mb-4"></div>
-          <p className="text-gray-600 text-xs md:text-sm max-w-2xl mx-auto">
-            Our consultants are not just advisors; they are seasoned researchers, peer-reviewers, and academic pioneers with decades of cumulative experience in the ivory tower.
-          </p>
-        </div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {facultyList.map((fac, idx) => (
-            <motion.div 
-              key={fac.id || idx}
-              whileHover={{ y: -5 }}
-              className="bg-brand-light p-8 border border-gray-200 rounded-sm text-center shadow-sm hover:shadow-md transition"
-            >
-              <div className="w-20 h-20 bg-white border border-brand-gold/30 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-sm">
-                <Image src="/Faculty.png" alt="Faculty" width={80} height={80} className="w-full h-full object-cover" />
-              </div>
-              <h3 className="text-xl font-serif font-bold text-brand-purple mb-1">{fac.name}</h3>
-              <p className="text-xs text-brand-gold font-bold mb-3">{fac.credentials}</p>
-              <p className="text-xs text-gray-500 mb-6 font-medium">{fac.experience}</p>
-              
-              <div className="border-t border-gray-200 pt-4 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Credentials:</p>
-                <p className="text-xs text-gray-700 mb-3 font-medium">{fac.credentials}</p>
-                
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Specializations:</p>
-                <ul className="space-y-1 text-xs text-gray-700">
-                  {Array.isArray(fac.specializations) && fac.specializations.map((s: string, i: number) => <li key={i}>✓ {s}</li>)}
-                </ul>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* 7. ELITE RESEARCH FACULTY (WITH CLICKABLE LINKEDIN CARDS) */}
-      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light border-t border-gray-200">
+      {/* 8. ELITE RESEARCH FACULTY (WITH CLICKABLE LINKEDIN CARDS) */}
+      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-3">Elite Research Faculty</h2>
           <div className="w-20 h-0.5 bg-brand-gold mx-auto mb-4"></div>
@@ -501,9 +459,9 @@ export default function HomePage() {
               href={fac.linkedin_url || "#"} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-white p-8 border border-gray-200 rounded-sm text-center shadow-sm hover:border-brand-gold hover:shadow-xl hover:-translate-y-1 transition-all duration-300 block cursor-pointer group"
+              className="bg-brand-light p-8 border border-gray-200 rounded-sm text-center shadow-sm hover:border-brand-gold hover:shadow-xl hover:-translate-y-1 transition-all duration-300 block cursor-pointer group"
             >
-              <div className="w-20 h-20 bg-brand-light border border-brand-gold/30 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-sm">
+              <div className="w-20 h-20 bg-white border border-brand-gold/30 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-sm transition-transform duration-300 group-hover:scale-105">
                 <Image 
                   src="/Faculty.png" 
                   alt="Faculty" 
@@ -513,53 +471,94 @@ export default function HomePage() {
                 />
               </div>
               <h3 className="text-xl font-serif font-bold text-brand-purple mb-1 group-hover:text-brand-gold transition-colors">{fac.name}</h3>
-              <p className="text-xs text-brand-gold font-bold mb-3">{fac.credentials || fac.title}</p>
+              <p className="text-xs text-brand-gold font-bold mb-3">{fac.credentials}</p>
               <p className="text-xs text-gray-500 mb-6 font-medium">{fac.experience}</p>
               
               <div className="border-t border-gray-200 pt-4 text-left">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Credentials:</p>
-                <p className="text-xs text-gray-700 mb-3 font-medium">{fac.credentials || fac.title}</p>
+                <p className="text-xs text-gray-700 mb-3 font-medium">{fac.credentials}</p>
                 
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Specializations:</p>
                 <ul className="space-y-1 text-xs text-gray-700">
                   {Array.isArray(fac.specializations) && fac.specializations.map((s: string, i: number) => <li key={i}>✓ {s}</li>)}
                 </ul>
               </div>
+
+              {/* Small LinkedIn Indicator */}
+              {fac.linkedin_url && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <span className="text-xs font-bold text-[#0a66c2] group-hover:underline flex items-center justify-center gap-1">
+                    View LinkedIn Profile →
+                  </span>
+                </div>
+              )}
             </a>
           ))}
         </div>
       </section>
 
-      {/* 10. FREQUENTLY ASKED QUESTIONS */}
-        <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-serif font-bold text-brand-purple text-center mb-12">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div key={faq.id || idx} className="border border-gray-200 rounded-sm bg-brand-light overflow-hidden transition-all">
-                  <button onClick={() => toggleFaq(idx)} className="w-full px-6 py-4 text-left font-serif font-bold text-brand-purple flex justify-between items-center text-sm">
-                    <span>{faq.question}</span>
-                    <span className="text-brand-gold">{openFaq === idx ? "▲" : "▼"}</span>
-                  </button>
-                  {openFaq === idx && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="px-6 pb-4 text-xs text-gray-600 leading-relaxed border-t border-gray-200 pt-3"
-                    >
-                      <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
-                    </motion.div>
-                  )}
-                </div>
-              ))}
+      {/* 9. ACADEMIC SUBJECTS */}
+      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light">
+        <div className="max-w-7xl mx-auto mb-16 flex flex-col items-center text-center">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-brand-purple mb-4">
+            PhD Research Guidance Across Academic Disciplines
+          </h2>
+          <div className="w-24 h-0.5 bg-brand-gold mx-auto mb-6"></div>
+          <p className="text-gray-600 text-sm md:text-base max-w-4xl mx-auto leading-relaxed">
+            We provide ethical research guidance, consultation, and academic support to doctoral scholars and researchers across a wide range of disciplines—from business and engineering to health sciences, social sciences, life sciences, humanities, and technology.
+          </p>
+        </div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
+          {disciplines.map((col, idx) => (
+            <div key={col.id || idx}>
+              <h4 className="font-serif font-bold text-brand-purple mb-4 uppercase tracking-wider text-sm md:text-base" dangerouslySetInnerHTML={{ __html: col.category_title }} />
+              <ul className="space-y-3 text-gray-700 text-sm">
+                {Array.isArray(col.disciplines_list) ? col.disciplines_list.map((item: string, i: number) => (
+                  <li key={i} className="hover:text-brand-purple transition-colors">· {item}</li>
+                )) : (
+                  <div dangerouslySetInnerHTML={{ __html: String(col.disciplines_list) }} className="prose text-sm text-gray-700 hover-links" />
+                )}
+              </ul>
             </div>
+          ))}
+        </div>
+
+        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-gray-200 text-sm italic text-gray-600 text-center">
+          Cant find your discipline? We work across 40+ academic fields. <a href="/contact" className="text-brand-gold font-semibold not-italic hover:underline">Contact us</a> to discuss your specialized area.
+        </div>
+      </section>
+
+      {/* 10. FREQUENTLY ASKED QUESTIONS */}
+      <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-serif font-bold text-brand-purple text-center mb-12">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div key={faq.id || idx} className="border border-gray-200 rounded-sm bg-brand-light overflow-hidden transition-all">
+                <button onClick={() => toggleFaq(idx)} className="w-full px-6 py-4 text-left font-serif font-bold text-brand-purple flex justify-between items-center text-sm">
+                  <span>{faq.question}</span>
+                  <span className="text-brand-gold">{openFaq === idx ? "▲" : "▼"}</span>
+                </button>
+                {openFaq === idx && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="px-6 pb-4 text-xs text-gray-600 leading-relaxed border-t border-gray-200 pt-3"
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                  </motion.div>
+                )}
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
       {/* BLOG CAROUSEL */}
       <BlogCarousel />
 
-     {/* 11. FINAL BOTTOM CTA BANNER WITH LAMP EFFECT */}
+      {/* 11. FINAL BOTTOM CTA BANNER WITH LAMP EFFECT */}
       <LampContainer>
         <motion.div 
           initial={{ opacity: 0.5, y: 100 }}
@@ -597,7 +596,7 @@ export default function HomePage() {
             </a>
           </div>
           <p className="text-xs text-brand-gold font-medium tracking-wide">
-            ✓ 92% OF OUR CLIENTS&apos; THESES ARE APPROVED ON FIRST SUBMISSION
+            ✓ 92% OF OUR CLIENTS THESES ARE APPROVED ON FIRST SUBMISSION
           </p>
         </motion.div>
       </LampContainer>
