@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import RichTextEditor from "@/components/leaddesk/RichTextEditor";
+import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon /* ... other icons ... */ } from "lucide-react";
 
 type SubTabType = "hero" | "stats" | "services" | "why" | "process" | "faqs" | "about_preview" | "ethics" | "faculty" | "disciplines" | "cta";
 
@@ -21,7 +22,7 @@ export default function HomeTab() {
   const [aboutPreview, setAboutPreview] = useState({ id: "", title: "", body_html: "", badge_text: "", image_url: "" });
   const [ethics, setEthics] = useState<{ id: string; point_number: number; title: string; description: string; }[]>([]);
   const [faculty, setFaculty] = useState<{ id: string; name: string; credentials: string; experience: string; specializations: string[]; image_url: string; display_order: number; linkedin_url: string; }[]>([]);
-  const [disciplines, setDisciplines] = useState<{ id: string; category_title: string; disciplines_list: string[]; display_order: number; icon_name: string; }[]>([]);
+  const [disciplines, setDisciplines] = useState<{ id: string; category_title: string; disciplines_list: string; display_order: number; icon_name: string; }[]>([]);
   const [cta, setCta] = useState({ id: "", badge_text: "", title: "", description: "", primary_button_text: "", primary_button_link: "", secondary_button_text: "", secondary_button_link: "", footer_stat_text: "" });
 
   const [loading, setLoading] = useState(true);
@@ -239,23 +240,23 @@ export default function HomeTab() {
     }
   };
 
-const handleSaveDiscipline = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const payload = {
-    category_title: disciplineForm.category_title,
-    disciplines_list: disciplineForm.disciplines_list, // Saved directly as rich text HTML
-    icon_name: disciplineForm.icon_name,
-    display_order: disciplineForm.display_order
-  };
+  const handleSaveDiscipline = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      category_title: disciplineForm.category_title,
+      disciplines_list: disciplineForm.disciplines_list,
+      icon_name: disciplineForm.icon_name,
+      display_order: disciplineForm.display_order
+    };
 
-  if (editingDiscipline) {
-    const { error } = await supabase.from("home_disciplines").update(payload).eq("id", editingDiscipline.id);
-    if (!error) { setShowDisciplineModal(false); loadHomeData(); } else { alert(error.message); }
-  } else {
-    const { error } = await supabase.from("home_disciplines").insert([payload]);
-    if (!error) { setShowDisciplineModal(false); loadHomeData(); } else { alert(error.message); }
-  }
-};
+    if (editingDiscipline) {
+      const { error } = await supabase.from("home_disciplines").update(payload).eq("id", editingDiscipline.id);
+      if (!error) { setShowDisciplineModal(false); loadHomeData(); } else { alert(error.message); }
+    } else {
+      const { error } = await supabase.from("home_disciplines").insert([payload]);
+      if (!error) { setShowDisciplineModal(false); loadHomeData(); } else { alert(error.message); }
+    }
+  };
 
   const handleSaveCta = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -427,9 +428,9 @@ const handleSaveDiscipline = async (e: React.FormEvent) => {
               {subTab === "faculty" && faculty.map((fac) => (
                 <tr key={fac.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-500">{fac.display_order}</td>
-                  <td className="p-5"><p className="font-bold text-slate-900 text-sm">{fac.name} <span className="text-xs text-slate-600 font-normal">({fac.credentials})</span></p><p className="text-xs text-slate-600 mt-0.5">{fac.specializations?.join(', ')}</p><p className="text-xs text-indigo-500 mt-0.5 break-all">{fac.linkedin_url}</p></td>
+                  <td className="p-5"><p className="font-bold text-slate-900 text-sm">{fac.name} <span className="text-xs text-slate-600 font-normal">({fac.credentials})</span></p><p className="text-xs text-slate-600 mt-0.5">{Array.isArray(fac.specializations) ? fac.specializations.join(', ') : fac.specializations}</p><p className="text-xs text-indigo-500 mt-0.5 break-all">{fac.linkedin_url}</p></td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingFaculty(fac); setFacultyForm({ ...fac, specializations: fac.specializations?.join(', ') || "" }); setShowFacultyModal(true); }} aria-label={`Edit faculty ${fac.name}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditingFaculty(fac); setFacultyForm({ ...fac, specializations: Array.isArray(fac.specializations) ? fac.specializations.join(', ') : (fac.specializations || "") }); setShowFacultyModal(true); }} aria-label={`Edit faculty ${fac.name}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors"><Pencil className="w-4 h-4" /></button>
                     <button onClick={async () => { if (window.confirm("Delete?")) { await supabase.from("about_faculty").delete().eq("id", fac.id); loadHomeData(); }}} aria-label={`Delete faculty ${fac.name}`} className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
@@ -437,10 +438,39 @@ const handleSaveDiscipline = async (e: React.FormEvent) => {
               {subTab === "disciplines" && disciplines.map((disc) => (
                 <tr key={disc.id} className="hover:bg-slate-50/80">
                   <td className="p-5 text-center font-bold text-slate-500">{disc.display_order}</td>
-                  <td className="p-5"><p className="font-bold text-slate-900 text-sm">{disc.category_title}</p><p className="text-xs text-slate-600 mt-1">{disc.disciplines_list?.join(', ')}</p></td>
+                  <td className="p-5">
+                    <p className="font-bold text-slate-900 text-sm" dangerouslySetInnerHTML={{ __html: disc.category_title }}></p>
+                    <p className="text-xs text-slate-600 mt-1">
+                      {Array.isArray(disc.disciplines_list) ? disc.disciplines_list.join(', ') : "Rich Text Content"}
+                    </p>
+                  </td>
                   <td className="p-5 flex gap-2 justify-end">
-                    <button onClick={() => { setEditingDiscipline(disc); setDisciplineForm({ ...disc, disciplines_list: disc.disciplines_list?.join(', ') || "" }); setShowDisciplineModal(true); }} aria-label={`Edit discipline category ${disc.category_title}`} className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={async () => { if (window.confirm("Delete?")) { await supabase.from("home_disciplines").delete().eq("id", disc.id); loadHomeData(); }}} aria-label={`Delete discipline category ${disc.category_title}`} className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <button 
+                      onClick={() => { 
+                        setEditingDiscipline(disc); 
+                        setDisciplineForm({ 
+                          ...disc, 
+                          disciplines_list: Array.isArray(disc.disciplines_list) ? disc.disciplines_list.join(', ') : (disc.disciplines_list || "") 
+                        }); 
+                        setShowDisciplineModal(true); 
+                      }} 
+                      aria-label="Edit discipline category" 
+                      className="p-2.5 bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={async () => { 
+                        if (window.confirm("Delete?")) { 
+                          await supabase.from("home_disciplines").delete().eq("id", disc.id); 
+                          loadHomeData(); 
+                        }
+                      }} 
+                      aria-label="Delete discipline category" 
+                      className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 rounded-xl transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -448,7 +478,6 @@ const handleSaveDiscipline = async (e: React.FormEvent) => {
           </table>
         </div>
       )}
-
       {/* --- ALL MODALS --- */}
       {showHeroModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
@@ -771,40 +800,41 @@ const handleSaveDiscipline = async (e: React.FormEvent) => {
 
       {showDisciplineModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center z-50 p-6">
-          <form onSubmit={handleSaveDiscipline} className="bg-white rounded-3xl shadow-2xl w-full max-w-lg flex flex-col p-8 space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">{editingDiscipline ? "Edit Discipline Category" : "Add Category"}</h3>
+          <form onSubmit={handleSaveDiscipline} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b flex justify-between items-center bg-slate-50 shrink-0">
+              <h3 className="text-lg font-bold text-slate-900">{editingDiscipline ? "Edit Discipline Category" : "Add Category"}</h3>
+              <button type="button" onClick={() => setShowDisciplineModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold">Cancel</button>
+            </div>
             
-            {/* Category Title with Rich Text & Link Formatting */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label htmlFor="disc-title" className="block text-xs font-bold uppercase text-slate-600">Category Title (HTML)</label>
-                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                  <button type="button" onClick={() => insertFormatting("category_title", disciplineForm, setDisciplineForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded cursor-pointer"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
-                  <button type="button" onClick={() => insertLink("category_title", disciplineForm, setDisciplineForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded cursor-pointer"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
-                </div>
+            <div className="p-8 overflow-y-auto space-y-6 flex-1">
+              <div>
+                <label htmlFor="disc-title" className="block text-xs font-bold uppercase text-slate-600 mb-1">Category Title</label>
+                <input id="disc-title" required value={disciplineForm.category_title} onChange={e => setDisciplineForm({...disciplineForm, category_title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
               </div>
-              <input id="disc-title" required value={disciplineForm.category_title} onChange={e => setDisciplineForm({...disciplineForm, category_title: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" />
-            </div>
-
-            {/* Disciplines List with Rich Text & Link Formatting */}
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label htmlFor="disc-list" className="block text-xs font-bold uppercase text-slate-600">Disciplines List (HTML / Links)</label>
-                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                  <button type="button" onClick={() => insertFormatting("disciplines_list", disciplineForm, setDisciplineForm, "<strong>", "</strong>")} title="Bold" className="p-1.5 hover:bg-white rounded cursor-pointer"><Bold className="w-3.5 h-3.5 text-slate-600"/></button>
-                  <button type="button" onClick={() => insertLink("disciplines_list", disciplineForm, setDisciplineForm)} title="Hyperlink" className="p-1.5 hover:bg-white rounded cursor-pointer"><LinkIcon className="w-3.5 h-3.5 text-slate-600"/></button>
+              
+              {/* Visual Editor for Disciplines List */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-600 mb-2">
+                  Disciplines List (Visual Editor)
+                </label>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <RichTextEditor 
+                    content={disciplineForm.disciplines_list || ""} 
+                    onChange={(html) => setDisciplineForm({...disciplineForm, disciplines_list: html})} 
+                  />
                 </div>
+                <p className="text-[10px] text-slate-500 mt-2">
+                  Use the bullet list tool and link button to format your disciplines visually like a Word document.
+                </p>
               </div>
-              <textarea id="disc-list" rows={4} required value={disciplineForm.disciplines_list} onChange={e => setDisciplineForm({...disciplineForm, disciplines_list: e.target.value})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600 font-mono" placeholder="Add disciplines with HTML tags or links..." />
+              
+              <div>
+                <label htmlFor="disc-order" className="block text-xs font-bold uppercase text-slate-600 mb-1">Display Order</label>
+                <input id="disc-order" type="number" required value={disciplineForm.display_order} onChange={e => setDisciplineForm({...disciplineForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
+              </div>
             </div>
-
-            <div>
-              <label htmlFor="disc-order" className="block text-xs font-bold uppercase text-slate-600 mb-1">Display Order</label>
-              <input id="disc-order" type="number" required value={disciplineForm.display_order} onChange={e => setDisciplineForm({...disciplineForm, display_order: parseInt(e.target.value)})} className="w-full border rounded-xl p-3 text-sm outline-none focus:border-indigo-600" />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button type="button" onClick={() => setShowDisciplineModal(false)} className="px-5 py-2.5 text-sm text-slate-700 font-semibold cursor-pointer">Cancel</button>
+            
+            <div className="p-6 border-t bg-slate-50 flex justify-end gap-3 shrink-0">
               <button type="submit" className="px-6 py-2.5 text-sm bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 cursor-pointer">Save Category</button>
             </div>
           </form>
