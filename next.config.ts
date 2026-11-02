@@ -3,6 +3,19 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async redirects() {
     return [
+      // 0. Force WWW Redirect (clearbyresearch.com -> www.clearbyresearch.com)
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "clearbyresearch.com",
+          },
+        ],
+        destination: "https://www.clearbyresearch.com/:path*",
+        permanent: true,
+      },
+
       // 1. Explicit Service & Custom Overrides
       {
         source: "/sample-view-research-manuscript",
