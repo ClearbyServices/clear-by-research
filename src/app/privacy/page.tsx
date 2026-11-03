@@ -1,4 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | E-Clearby Research",
+  description: "Read the Privacy Policy for E-Clearby Research Consulting Pvt. Ltd.",
+  alternates: {
+    canonical: "https://www.clearbyresearch.com/privacy",
+  },
+};
 
 export default function PrivacyPolicyPage() {
   return (

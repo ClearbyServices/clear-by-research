@@ -1,4 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions | E-Clearby Research",
+  description: "Read the Terms & Conditions for E-Clearby Research Consulting Pvt. Ltd.",
+  alternates: {
+    canonical: "https://www.clearbyresearch.com/terms",
+  },
+};
 
 export default function TermsPage() {
   return (
