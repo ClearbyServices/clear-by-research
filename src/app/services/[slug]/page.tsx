@@ -38,6 +38,19 @@ interface ServiceData {
   };
 }
 
+/**
+ * Helper function to clean up HTML strings from Supabase:
+ * Removes target="_blank", rel="noopener noreferrer nofollow", etc.
+ */
+function cleanHtmlContent(htmlString: string): string {
+  if (!htmlString) return "";
+  return htmlString
+    .replace(/target="_blank"/g, "")
+    .replace(/rel="[^"]*"/g, "")
+    .replace(/rel='[^']*'/g, "")
+    .replace(/\s+/g, " "); // Clean up extra spaces left behind
+}
+
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
@@ -118,12 +131,11 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="w-full flex flex-col bg-brand-light text-brand-dark overflow-x-hidden">
       
-      {/* 1. HERO SECTION (Matched to Homepage styling) */}
+      {/* 1. HERO SECTION */}
       <section className="w-full bg-brand-purple text-white py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-7">
-            {/* Breadcrumbs */}
             <div className="mb-6 text-[11px] font-bold text-gray-300 uppercase tracking-widest flex items-center gap-2">
               <Link href="/" className="hover:text-brand-gold transition-colors">Home</Link> 
               <span className="text-brand-gold">›</span> 
@@ -142,7 +154,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
             <div className="text-gray-300 text-sm md:text-base mb-8 leading-relaxed max-w-2xl prose prose-invert [&_a]:text-brand-gold [&_a]:underline [&_a:hover]:opacity-80">
               {service.introParagraphs.map((para, idx) => (
-                <div key={idx} dangerouslySetInnerHTML={{ __html: para }} className="mb-4 last:mb-0" />
+                <div key={idx} dangerouslySetInnerHTML={{ __html: cleanHtmlContent(para) }} className="mb-4 last:mb-0" />
               ))}
             </div>
           </div>
@@ -154,7 +166,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
       </section>
       
-      {/* 2. STATS BAR (Matched to Homepage) */}
+      {/* 2. STATS BAR */}
       <section className="w-full bg-[#24133A] text-white py-12 border-t border-b border-brand-gold/30">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
@@ -171,7 +183,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </div>
       </section>
       
-      {/* 3. FEATURES SECTION (Matched to Homepage Services Grid styling) */}
+      {/* 3. FEATURES SECTION */}
       {service.featuresSection && service.featuresSection.list && service.featuresSection.list.length > 0 && (
         <section className="w-full py-20 px-4 sm:px-6 lg:px-8 bg-brand-light">
           <div className="max-w-7xl mx-auto text-center mb-16">
@@ -197,7 +209,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 </h3>
                 <div 
                   className="text-xs text-gray-600 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-purple" 
-                  dangerouslySetInnerHTML={{ __html: feat.desc }} 
+                  dangerouslySetInnerHTML={{ __html: cleanHtmlContent(feat.desc) }} 
                 />
               </div>
             ))}
@@ -235,7 +247,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   </h3>
                   <div 
                     className="text-xs text-gray-600 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-purple" 
-                    dangerouslySetInnerHTML={{ __html: sub.desc }} 
+                    dangerouslySetInnerHTML={{ __html: cleanHtmlContent(sub.desc) }} 
                   />
                 </div>
               </div>
@@ -266,10 +278,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   <tr key={idx} className="hover:bg-white/5 transition-colors">
                     <td className="py-4 px-6 font-bold text-white">{row.feature}</td>
                     <td className="py-4 px-6 text-gray-400">
-                      <div dangerouslySetInnerHTML={{ __html: row.generic }} />
+                      <div dangerouslySetInnerHTML={{ __html: cleanHtmlContent(row.generic) }} />
                     </td>
                     <td className="py-4 px-6 text-brand-gold font-semibold">
-                      <div dangerouslySetInnerHTML={{ __html: row.clearby }} />
+                      <div dangerouslySetInnerHTML={{ __html: cleanHtmlContent(row.clearby) }} />
                     </td>
                   </tr>
                 ))}
@@ -279,10 +291,10 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         </section>
       )}
 
-      {/* 6. FAQ (Using external Client Component) */}
+      {/* 6. FAQ */}
       <FaqAccordion faqs={service.faqs} />
 
-      {/* 7. CTA SECTION (Matched to Homepage Lamp CTA vibe, but built for Server Component compatibility) */}
+      {/* 7. CTA SECTION */}
       <section className="w-full py-24 bg-brand-purple text-white px-4 sm:px-6 lg:px-8 text-center border-t border-brand-gold/20">
         <div className="max-w-4xl mx-auto">
           <span className="text-xs font-bold text-white tracking-widest uppercase block mb-3">
@@ -293,7 +305,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </h2>
           <div 
             className="text-gray-300 text-sm max-w-2xl mx-auto mb-10 leading-relaxed [&_p]:mb-2 [&_a]:underline [&_a]:text-brand-gold"
-            dangerouslySetInnerHTML={{ __html: service.ctaSection.text }}
+            dangerouslySetInnerHTML={{ __html: cleanHtmlContent(service.ctaSection.text) }}
           />
           <div className="flex flex-wrap justify-center gap-4">
             <a 

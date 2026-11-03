@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link"; // <-- 1. Import Link extension
 import Placeholder from "@tiptap/extension-placeholder";
 import { 
   Bold, Italic, Heading1, Heading2, List, ListOrdered, 
@@ -15,7 +16,7 @@ interface RichTextEditorProps {
   content: string;
   onChange: (html: string) => void;
   placeholder?: string;
-  stripParagraphs?: boolean; // Optional flag if you want plain text without outer <p> tags
+  stripParagraphs?: boolean;
 }
 
 export default function RichTextEditor({ content, onChange, placeholder, stripParagraphs = false }: RichTextEditorProps) {
@@ -26,6 +27,14 @@ export default function RichTextEditor({ content, onChange, placeholder, stripPa
         heading: { levels: [1, 2, 3] },
       }),
       Highlight.configure({ multicolor: true }),
+      // 2. Configure Link to NOT generate rel="noopener noreferrer nofollow"
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          rel: null, // Removes rel attribute completely
+          target: null, // Removes target="_blank" so it opens in the same window (or standard behavior)
+        },
+      }),
       Image.configure({
         HTMLAttributes: {
           class: "rounded-xl max-h-[400px] w-full object-cover my-4 border border-slate-200 shadow-sm",
@@ -44,7 +53,6 @@ export default function RichTextEditor({ content, onChange, placeholder, stripPa
     onUpdate: ({ editor }) => {
       let html = editor.getHTML();
       
-      // Optional cleaner: if stripParagraphs is true, remove outer <p> and </p> tags
       if (stripParagraphs) {
         html = html.replace(/^<p>/, "").replace(/<\/p>$/, "");
       }

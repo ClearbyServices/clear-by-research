@@ -76,7 +76,7 @@ export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const router = useRouter();
 
-  // Dynamic Content States from Supabase with Fallbacks
+    // Dynamic Content States from Supabase with Fallbacks
   const [hero, setHero] = useState<HeroContent>({
     badge: "PHD RESEARCH GUIDANCE",
     title: "PhD Research Guidance from Expert Consultants: From Topic Consultation to Successful Thesis Defence",
@@ -512,14 +512,49 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
           {disciplines.map((col, idx) => (
             <div key={col.id || idx}>
-              <h4 className="font-serif font-bold text-brand-purple mb-4 uppercase tracking-wider text-sm md:text-base" dangerouslySetInnerHTML={{ __html: col.category_title }} />
-              <ul className="space-y-3 text-gray-700 text-sm">
-                {Array.isArray(col.disciplines_list) ? col.disciplines_list.map((item: string, i: number) => (
-                  <li key={i} className="hover:text-brand-purple transition-colors">· {item}</li>
-                )) : (
-                  <div dangerouslySetInnerHTML={{ __html: String(col.disciplines_list) }} className="prose text-sm text-gray-700 hover-links" />
-                )}
-              </ul>
+              <h4 
+                className="font-serif font-bold text-brand-purple mb-5 uppercase tracking-wider text-sm md:text-base [&_a]:text-brand-purple [&_a:hover]:text-brand-gold [&_a]:transition-colors" 
+                dangerouslySetInnerHTML={{ __html: col.category_title }} 
+              />
+              
+              {(() => {
+                const content = col.disciplines_list;
+                
+                // 1. Handle Legacy Arrays
+                if (Array.isArray(content)) {
+                  return (
+                    <ul className="space-y-3.5 text-gray-700 text-sm">
+                      {content.map((item: string, i: number) => (
+                        <li key={i} className="hover:text-brand-purple transition-colors flex items-start gap-2">
+                          <span className="text-gray-400 font-bold">·</span> {item}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+                
+                // 2. Handle the comma-separated strings (from our SQL conversion)
+                if (typeof content === 'string' && !content.includes('<') && content.includes(',')) {
+                  const items = content.split(',').map(s => s.trim()).filter(Boolean);
+                  return (
+                    <ul className="space-y-3.5 text-gray-700 text-sm">
+                      {items.map((item: string, i: number) => (
+                        <li key={i} className="hover:text-brand-purple transition-colors flex items-start gap-2">
+                          <span className="text-gray-400 font-bold">·</span> {item}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                // 3. Handle New Rich Text Editor HTML
+                return (
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: String(content) }} 
+                    className="text-sm text-gray-700 space-y-3.5 leading-relaxed [&_ul]:space-y-3.5 [&_li]:hover:text-brand-purple [&_li]:transition-colors [&_a]:text-gray-700 [&_a:hover]:text-brand-purple [&_a]:transition-colors [&_p]:mb-3.5"
+                  />
+                );
+              })()}
             </div>
           ))}
         </div>
