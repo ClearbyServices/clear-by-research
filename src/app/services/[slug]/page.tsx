@@ -40,11 +40,17 @@ interface ServiceData {
 
 /**
  * Helper function to clean up HTML strings from Supabase:
- * Removes target="_blank", rel="noopener noreferrer nofollow", etc.
+ * Removes rogue SEO tags pasted from DB, target="_blank", rel="noopener", etc.
  */
 function cleanHtmlContent(htmlString: string): string {
   if (!htmlString) return "";
   return htmlString
+    // 1. Strip rogue SEO and Head tags pasted from the database
+    .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, "")
+    .replace(/<meta[^>]*>/gi, "")
+    .replace(/<link[^>]*>/gi, "")
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, "")
+    // 2. Clean up attributes
     .replace(/target="_blank"/g, "")
     .replace(/rel="[^"]*"/g, "")
     .replace(/rel='[^']*'/g, "")
@@ -57,11 +63,25 @@ export async function generateMetadata(
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
 
-  const { data: service } = await supabase
+  // Try exact match first
+  let { data: service } = await supabase
     .from("services")
-    .select("title, meta_description")
+    .select("title, meta_description, slug")
     .eq("slug", decodedSlug)
     .single();
+
+  // If exact match fails, use the exact same fallback as your page component
+  if (!service) {
+    const { data: fallbackData } = await supabase
+      .from('services')
+      .select('title, meta_description, slug')
+      .ilike('slug', `%${decodedSlug}%`)
+      .limit(1);
+
+    if (fallbackData && fallbackData.length > 0) {
+      service = fallbackData[0];
+    }
+  }
 
   if (!service) {
     return { title: "Service Not Found | E-Clearby Research" };
@@ -71,7 +91,8 @@ export async function generateMetadata(
     title: service.title,
     description: service.meta_description,
     alternates: { 
-      canonical: `https://www.clearbyresearch.com/services/${decodedSlug}` 
+      // Use the actual database slug to ensure the canonical is perfectly accurate
+      canonical: `https://www.clearbyresearch.com/services/${service.slug}` 
     },
   };
 }
