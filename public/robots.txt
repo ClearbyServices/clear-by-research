@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /search/
+Disallow: /*?
+
+# Agent-Ready Content Signal
+Content-Signal: search=yes, ai-train=no
+
+Sitemap: https://www.clearbyresearch.com/sitemap.xml

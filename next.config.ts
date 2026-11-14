@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Link",
+            value: '<https://www.clearbyresearch.com/llms.txt>; rel="alternate"; type="text/markdown"'
+          }
+        ]
+      }
+    ];
+  },
   async redirects() {
     return [
       // 0. Force WWW Redirect (clearbyresearch.com -> www.clearbyresearch.com)

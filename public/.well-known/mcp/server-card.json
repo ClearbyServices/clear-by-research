@@ -1,0 +1,11 @@
+{
+  "name": "ClearbyResearch",
+  "version": "1.0.0",
+  "description": "PhD Research Consulting and Academic Guidance",
+  "contact": "contact@clearbyresearch.com",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  }
+}

@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BackToTop from "@/components/BackToTop";
 import CrispChat from "@/components/CrispChat";
+import WebMCPInit from "@/components/WebMCPInit"; // <-- Imported WebMCPInit
 
 // Load the modern Sans font for body text
 const inter = Inter({
@@ -284,6 +285,8 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+
+        <WebMCPInit /> {/* <-- Injected here to expose tools to browser agents */}
 
         <Header />
         <main className="flex-grow">{children}</main>
