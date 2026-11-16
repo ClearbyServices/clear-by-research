@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import type { Metadata } from "next";
+import { cache } from "react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -21,32 +22,8 @@ interface BlogPost {
   meta_description?: string;
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
-): Promise<Metadata> {
-  const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug).trim();
-
-  const { data: post } = await supabase
-    .from("blogs")
-    .select("title, meta_description")
-    .eq("slug", decodedSlug)
-    .single();
-
-  if (!post) {
-    return { title: "Blog Post Not Found | E-Clearby Research" };
-  }
-
-  return {
-    title: post.title,
-    description: post.meta_description || post.title,
-    alternates: { 
-      canonical: `https://www.clearbyresearch.com/blog/${decodedSlug}` 
-    },
-  };
-}
-
-async function getBlogPost(slug: string): Promise<BlogPost | null> {
+// Wrap the data fetching function in React's cache to avoid double-fetching
+const getBlogPost = cache(async (slug: string): Promise<BlogPost | null> => {
   const decodedSlug = decodeURIComponent(slug).trim();
 
   const { data, error } = await supabase
@@ -74,6 +51,27 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
   }
 
   return resolvedData;
+});
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  
+  // Reuse the cached function instead of making a second database query
+  const post = await getBlogPost(slug);
+
+  if (!post) {
+    return { title: "Blog Post Not Found | E-Clearby Research" };
+  }
+
+  return {
+    title: post.title,
+    description: post.meta_description || post.title,
+    alternates: { 
+      canonical: `https://www.clearbyresearch.com/blog/${post.slug}` 
+    },
+  };
 }
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {

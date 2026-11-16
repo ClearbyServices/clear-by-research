@@ -1,3 +1,4 @@
+import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CheckCircle2, ArrowRight, Layers, Sparkles } from "lucide-react";
@@ -15,6 +16,7 @@ const supabase = createClient(
 interface ServiceData {
   slug: string;
   title: string;
+  meta_description?: string;
   subMenu?: string;
   category: string;
   h1: string;
@@ -57,47 +59,8 @@ function cleanHtmlContent(htmlString: string): string {
     .replace(/\s+/g, " "); // Clean up extra spaces left behind
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
-): Promise<Metadata> {
-  const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug).trim();
-
-  // Try exact match first
-  let { data: service } = await supabase
-    .from("services")
-    .select("title, meta_description, slug")
-    .eq("slug", decodedSlug)
-    .single();
-
-  // If exact match fails, use the exact same fallback as your page component
-  if (!service) {
-    const { data: fallbackData } = await supabase
-      .from('services')
-      .select('title, meta_description, slug')
-      .ilike('slug', `%${decodedSlug}%`)
-      .limit(1);
-
-    if (fallbackData && fallbackData.length > 0) {
-      service = fallbackData[0];
-    }
-  }
-
-  if (!service) {
-    return { title: "Service Not Found | E-Clearby Research" };
-  }
-
-  return {
-    title: service.title,
-    description: service.meta_description,
-    alternates: { 
-      // Use the actual database slug to ensure the canonical is perfectly accurate
-      canonical: `https://www.clearbyresearch.com/services/${service.slug}` 
-    },
-  };
-}
-
-async function getService(slug: string): Promise<ServiceData | null> {
+// Wrap the data fetching function in React's cache to avoid double-fetching
+const getService = cache(async (slug: string): Promise<ServiceData | null> => {
   const decodedSlug = decodeURIComponent(slug).trim();
 
   const { data, error } = await supabase
@@ -127,6 +90,7 @@ async function getService(slug: string): Promise<ServiceData | null> {
   return {
     slug: resolvedData.slug,
     title: resolvedData.title,
+    meta_description: resolvedData.meta_description,
     subMenu: resolvedData.sub_menu,
     category: resolvedData.category,
     h1: resolvedData.h1 || resolvedData.title,
@@ -136,6 +100,25 @@ async function getService(slug: string): Promise<ServiceData | null> {
     comparisonSection: resolvedData.comparison_section,
     faqs: resolvedData.faqs || [],
     ctaSection: resolvedData.cta_section || { title: "Ready to Get Started?", text: "Connect with our experts today.", buttonText: "Enquire Now" },
+  };
+});
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const service = await getService(slug);
+
+  if (!service) {
+    return { title: "Service Not Found | E-Clearby Research" };
+  }
+
+  return {
+    title: service.title,
+    description: service.meta_description,
+    alternates: { 
+      canonical: `https://www.clearbyresearch.com/services/${service.slug}` 
+    },
   };
 }
 

@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | E-Clearby Research",
+  // Brand name removed
+  title: "Privacy Policy",
   description: "Read the Privacy Policy for E-Clearby Research Consulting Pvt. Ltd.",
   alternates: {
     canonical: "https://www.clearbyresearch.com/privacy",
@@ -21,7 +22,8 @@ export default function PrivacyPolicyPage() {
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-brand-purple mb-4">
           Privacy Policy
         </h1>
-        <div className="text-xs text-gray-500 font-medium space-x-4">
+        {/* data-nosnippet added here to hide dates from Google Search */}
+        <div data-nosnippet className="text-xs text-gray-500 font-medium space-x-4">
           <span>Effective Date: 26 September 2026</span>
           <span>•</span>
           <span>Last Updated: 26 September 2026</span>

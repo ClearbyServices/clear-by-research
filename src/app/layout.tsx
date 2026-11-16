@@ -21,7 +21,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "PhD Research Guidance from Expert Consultants | 11+ Yrs of Exp. | E-Clearby Research",
+  title: {
+    default: "PhD Research Guidance from Expert Consultants | 11+ Yrs of Exp. | E-Clearby Research",
+    template: "%s | E-Clearby Research Consulting",
+  },
   description: "Get PhD thesis guidance from experts with 11+ years of experience. Personalized, integrity-first coaching and affordable dissertation consultation for your research.",
   alternates: { canonical: "https://www.clearbyresearch.com/" },
 };
