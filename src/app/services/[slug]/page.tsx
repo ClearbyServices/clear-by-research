@@ -113,8 +113,16 @@ export async function generateMetadata(
     return { title: "Service Not Found | E-Clearby Research" };
   }
 
+  // Prioritize the specific service name (subMenu or h1) so it doesn't repeat generic titles
+  const specificName = service.subMenu || service.h1 || service.title;
+  
+  // Ensure the brand is always appended cleanly without duplicating
+  const pageTitle = specificName.includes("Clearby") 
+    ? specificName 
+    : `${specificName} | E-Clearby Research`;
+
   return {
-    title: service.title,
+    title: pageTitle,
     description: service.meta_description,
     alternates: { 
       canonical: `https://www.clearbyresearch.com/services/${service.slug}` 
