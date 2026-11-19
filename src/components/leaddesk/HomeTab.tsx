@@ -3,15 +3,28 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import RichTextEditor from "@/components/leaddesk/RichTextEditor";
-import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon /* ... other icons ... */ } from "lucide-react";
+import { Pencil, Trash2, X, Plus, Bold, Italic, Heading1, Quote, Link as LinkIcon, Globe, Save } from "lucide-react";
 
-type SubTabType = "hero" | "stats" | "services" | "why" | "process" | "faqs" | "about_preview" | "ethics" | "faculty" | "disciplines" | "cta";
+type SubTabType = "hero" | "stats" | "services" | "why" | "process" | "faqs" | "about_preview" | "ethics" | "faculty" | "disciplines" | "cta" | "seo";
 
 export default function HomeTab() {
   const [subTab, setSubTab] = useState<SubTabType>("hero");
 
   // --- States ---
-  const [hero, setHero] = useState({ id: "", badge: "", title: "", description: "", cta_text: "", cta_link: "", secondary_cta_text: "", secondary_cta_link: "" });
+  const [hero, setHero] = useState({
+    id: "",
+    badge: "",
+    title: "",
+    description: "",
+    cta_text: "",
+    cta_link: "",
+    secondary_cta_text: "",
+    secondary_cta_link: "",
+    meta_title: "",
+    meta_description: ""
+  });
+  const [savingSeo, setSavingSeo] = useState(false);
+
   const [stats, setStats] = useState<{ id: string; metric_number: string; label: string; display_order: number }[]>([]);
   const [services, setServices] = useState<{ id: string; title: string; description: string; category: string; badge: string; link_url: string; display_order: number; }[]>([]);
   const [whyChoose, setWhyChoose] = useState<{ id: string; point_text: string; display_order: number }[]>([]);
@@ -72,7 +85,13 @@ export default function HomeTab() {
         supabase.from("home_cta").select("*").limit(1).maybeSingle()
       ]);
 
-      if (hRes.data) setHero(hRes.data);
+      if (hRes.data) {
+        setHero({
+          ...hRes.data,
+          meta_title: hRes.data.meta_title || "",
+          meta_description: hRes.data.meta_description || ""
+        });
+      }
       if (sRes.data) setStats(sRes.data);
       if (svRes.data) setServices(svRes.data);
       if (wRes.data) setWhyChoose(wRes.data);
@@ -143,6 +162,31 @@ export default function HomeTab() {
     e.preventDefault();
     const { error } = await supabase.from("home_hero").update({ ...hero, updated_at: new Date().toISOString() }).eq("id", hero.id);
     if (!error) { alert("Hero section updated!"); setShowHeroModal(false); loadHomeData(); } else { alert(error.message); }
+  };
+
+  const handleSaveSeo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hero.id) {
+      alert("Hero record not found in database.");
+      return;
+    }
+    setSavingSeo(true);
+    const { error } = await supabase
+      .from("home_hero")
+      .update({
+        meta_title: hero.meta_title,
+        meta_description: hero.meta_description,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", hero.id);
+
+    setSavingSeo(false);
+    if (!error) {
+      alert("Homepage SEO & Meta updated!");
+      loadHomeData();
+    } else {
+      alert(error.message);
+    }
   };
 
   const handleSaveStat = async (e: React.FormEvent) => {
@@ -278,7 +322,7 @@ export default function HomeTab() {
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Manage Home Page</h2>
-          <p className="text-sm text-slate-600 mt-1">Control all 11 sections of your homepage with rich formatting support.</p>
+          <p className="text-sm text-slate-600 mt-1">Control all 12 sections of your homepage with rich formatting and SEO support.</p>
         </div>
         <div className="flex gap-1 bg-slate-100 p-1.5 rounded-xl flex-wrap">
           <button onClick={() => setSubTab("hero")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${subTab === "hero" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Hero</button>
@@ -292,11 +336,68 @@ export default function HomeTab() {
           <button onClick={() => setSubTab("faculty")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${subTab === "faculty" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Faculty</button>
           <button onClick={() => setSubTab("disciplines")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${subTab === "disciplines" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Disciplines</button>
           <button onClick={() => setSubTab("cta")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${subTab === "cta" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>CTA</button>
+          <button onClick={() => setSubTab("seo")} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${subTab === "seo" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>
+            <Globe className="w-3.5 h-3.5" /> SEO & Meta
+          </button>
         </div>
       </div>
 
       {loading ? (
         <div className="p-12 text-center text-slate-500 font-medium bg-white rounded-2xl border border-slate-200">Loading Home page data...</div>
+      ) : subTab === "seo" ? (
+        <form onSubmit={handleSaveSeo} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+          <div className="flex justify-between items-center border-b pb-4">
+            <div>
+              <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                <Globe className="w-5 h-5 text-indigo-600" /> Homepage SEO & Meta Tags
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">Configure how your homepage appears in Google search results and social previews.</p>
+            </div>
+            <button
+              type="submit"
+              disabled={savingSeo}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" /> {savingSeo ? "Saving..." : "Save SEO"}
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="home-meta-title" className="block text-xs font-bold uppercase text-slate-600 tracking-wider">Meta Title</label>
+                <span className={`text-xs font-medium ${(hero.meta_title?.length || 0) > 60 ? "text-amber-600" : "text-slate-400"}`}>
+                  {hero.meta_title?.length || 0} / 60 chars
+                </span>
+              </div>
+              <input
+                id="home-meta-title"
+                type="text"
+                value={hero.meta_title || ""}
+                onChange={e => setHero({ ...hero, meta_title: e.target.value })}
+                placeholder="e.g. PhD Research Guidance from Expert Consultants | E-Clearby Research"
+                className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="home-meta-desc" className="block text-xs font-bold uppercase text-slate-600 tracking-wider">Meta Description</label>
+                <span className={`text-xs font-medium ${(hero.meta_description?.length || 0) > 160 ? "text-amber-600" : "text-slate-400"}`}>
+                  {hero.meta_description?.length || 0} / 160 chars
+                </span>
+              </div>
+              <textarea
+                id="home-meta-desc"
+                rows={4}
+                value={hero.meta_description || ""}
+                onChange={e => setHero({ ...hero, meta_description: e.target.value })}
+                placeholder="Write a concise summary of your homepage for search engines..."
+                className="w-full border border-slate-200 rounded-xl p-3.5 text-sm outline-none focus:border-indigo-600"
+              />
+            </div>
+          </div>
+        </form>
       ) : subTab === "hero" ? (
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
           <div className="flex justify-between items-center border-b pb-4">
